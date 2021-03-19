@@ -1,0 +1,37 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+html {
+    background-color: #033280;
+}
+a{
+    text-decoration: none;
+    color: rgb(212, 212, 212);
+}
+a:hover{
+    color: #2b92ff;
+}
+nav{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 17vh;
+    background-color:#011e38;
+}
+.nav-links{
+    display:flex;
+    justify-content: space-around;
+    width: 140%;
+
+}
+.nav-links li{
+    list-style: none;
+    text-decoration: none;
+}
+.nav-links a{
+    letter-spacing: 3px;
+    font-weight: bold;
+    font-size: 14px;
+}

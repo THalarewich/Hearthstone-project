@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/styles.css">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="/"><img src="../images/Hearthstone_2016_logo.png" alt="Hearthstone logo title"></a>
+        <div>
+            <ul class="nav-links">
+                <li><a class="nav-link" href="/profile">Profile</a></li>
+                <li><a class="nav-link" href="/builder">Deck Builder</a></li>
+                <li><a class="nav-link" href="/match">Match'em up</a></li>
+                <li><a class="nav-link" href="/login">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <header>Inn Keepers Daughter</header>
+    <main>{% block main %}{% endblock %}</main>
+</body>
+</html>
