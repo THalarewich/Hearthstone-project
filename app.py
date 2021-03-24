@@ -1,13 +1,29 @@
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session, url_for
 from flask_session import Session
-from werkzeug.security import check_password_hash, generate_password_hash
+from authlib.integrations.flask_client import OAuth
+
 import sqlite3
 
 # config app
 app = Flask(__name__)
 # use config file
-app.config.from_object('config.Config')
 
+# *add to config file*
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
+# Oauth config
+oauth = OAuth(app)
+# *figure out why client_id and client_secret are not being read from config.py*
+hearthstone = oauth.register(
+    name = "hearthstone", 
+    access_token_url = "https://us.battle.net/oauth/token",
+    access_token_params = None,
+    authorize_url = "https://us.battle.net/oauth/authorize",
+    authorize_params = None,
+    api_base_url = "http://us.battle.net",
+    client_kwargs = {"scope":"openid"}
+)
+app.config.from_object('config.Config')
 
 # Create connection with DB, preform query, return result set, close DB connection 
 def SQL(query):
@@ -21,42 +37,24 @@ def SQL(query):
 @app.route("/", methods=["GET", "POST"])
 #@login_required
 def index():
-    redirect("/login")
+    # resp = get.("")
+    # user_info = resp.json()
+    battle_tag = dict(session).get("battletag", None)  
+    return f"hello {battle_tag}"
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/battlenet_login")
 def login():
-    session.clear()
-    if request.method == "POST":
-        if not request.form.get("username"):
-            pass
-            # return error("Must enter username")
-        elif not request.form.get("password"):
-            pass
-            # return error("Must enter password")
-        
-        redirect("/")
-    else:
-        return render_template("login.html")
+    hearthstone = oauth.create_client("hearthstone")
+    redirect_uri = url_for("authorize", _external=True)
+    return hearthstone.authorize_redirect(redirect_uri)
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        # grab user input from form
-        username = request.form.get("username")
-        password = request.form.get("password")
-        confirm = request.form.get("confirm")
-        # verify user input
-        query_result = SQL(("SELECT COUNT(id) FROM users WHERE username = ?", username))
-        if query_result[0]["COUNT(id)"] == 1 or username == "":
-            pass
-            #return error(Username already taken or field was left blank)
-        elif password == "" or not password == confirm:
-            pass
-            #return error(Passwords don't match or field was left blank)
-        else:
-            # hash password to store in DB
-            PWhash = generate_password_hash(password, method='pbkdf2:sha256')
-            SQL(("INSERT INTO users (username, hash) VALUES (?, ?)", username, PWhash))
-        return render_template("login.html")
-    else:
-        return render_template("register.html")
+@app.route("/authorize")
+def authorize():
+    hearthstone = oauth.create_client("hearthstone")
+    token = hearthstone.authorize_access_token()
+    resp = hearthstone.get("oauth/userinfo")
+    resp.raise_for_status()
+    user = resp.json()
+    session["battletag"] = user["battletag"]
+    # do something with the token and profile
+    return redirect("/")
