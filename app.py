@@ -3,23 +3,22 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from authlib.integrations.flask_client import OAuth
 from functools import wraps
-from tempfile import mkdtemp
+
 import sqlite3
 
 # config app
 app = Flask(__name__)
 # use config file
+app.config.from_object('config.Config')
 
-# *add to config file*
-app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 # Oauth config
 oauth = OAuth(app)
 # *figure out why client_id and client_secret are not being read from config.py*
 hearthstone = oauth.register(
     name = "hearthstone", 
+    client_id = app.config["CLIENT_ID"],
+    client_secret = app.config["CLIENT_SECRET"],
     access_token_url = "https://us.battle.net/oauth/token",
     access_token_params = None,
     authorize_url = "https://us.battle.net/oauth/authorize",
@@ -27,7 +26,6 @@ hearthstone = oauth.register(
     api_base_url = "http://us.battle.net",
     client_kwargs = {"scope":"openid"}
 )
-app.config.from_object('config.Config')
 
 # Create connection with DB, preform query, return result set, close DB connection 
 def SQL(query, p1=None):
@@ -57,11 +55,11 @@ def login_required(f):
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
-def index():
-
+def profile():
     battle_tag = dict(session).get("battletag", None)
-    user_id = dict(session).get("username", None) 
-    return f"hello {battle_tag} user {user_id}"
+    user_id = dict(session).get("username", None)
+    print(battle_tag, user_id)
+    return render_template("profile.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -132,6 +130,13 @@ def authorize():
     resp = hearthstone.get("oauth/userinfo")
     resp.raise_for_status()
     user = resp.json()
+    session["access_token"] = token["access_token"]
     # store token and battletag in database
-    SQL(("UPDATE users SET token = ?, battle_tag = ? WHERE id = ?", token, user["battle_tag"], session.user_id))
+    SQL("UPDATE users SET access_token = ?, battle_tag = ? WHERE id = ?", (token["access_token"], user["battletag"], session["user_id"]))
     return redirect("/")
+
+@app.route("/builder", methods=["GET", "POST"])
+def deck_builder():
+    if request.method == "POST":
+        
+    return render_template("builder.html")
