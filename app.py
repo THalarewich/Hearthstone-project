@@ -1,9 +1,9 @@
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from authlib.integrations.flask_client import OAuth
 from functools import wraps
-
+import requests
 import sqlite3
 
 # config app
@@ -58,10 +58,10 @@ def login_required(f):
 def profile():
     battle_tag = dict(session).get("battletag", None)
     user_id = dict(session).get("username", None)
-    print(battle_tag, user_id)
+    #print(battle_tag, user_id)
     return render_template("profile.html")
 
-
+# Handles user login checking and login
 @app.route("/login", methods=["GET", "POST"])
 def login():
     session.clear()
@@ -85,7 +85,7 @@ def login():
             session["user_id"] = sql_query[0][0]
             session["username"] = sql_query[0][1]
             return redirect("/")
-
+    # If route is requested through a GET request
     return render_template("login.html", error=error)
 
 
@@ -130,7 +130,6 @@ def authorize():
     resp = hearthstone.get("oauth/userinfo")
     resp.raise_for_status()
     user = resp.json()
-    session["access_token"] = token["access_token"]
     # store token and battletag in database
     SQL("UPDATE users SET access_token = ?, battle_tag = ? WHERE id = ?", (token["access_token"], user["battletag"], session["user_id"]))
     return redirect("/")
@@ -138,5 +137,20 @@ def authorize():
 @app.route("/builder", methods=["GET", "POST"])
 def deck_builder():
     if request.method == "POST":
-        
+        pass
     return render_template("builder.html")
+
+@app.route("/match")
+def match():
+    return render_template("match.html")
+
+@app.route("/api_call")
+def api_card_call():
+    # SQL query for current user access token
+    token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
+    # make api call for a minion card and store in response var
+    response = requests.get("https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&access_token=" + token[0][0])
+    # save response as json in var
+    json_cards = response.text
+    # sends minion cards to JS file
+    return jsonify(json_cards)

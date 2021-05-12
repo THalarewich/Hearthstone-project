@@ -9,11 +9,11 @@
 </head>
 <body>
     <nav>
-        <a href="/"><img src="../images/Hearthstone_2016_logo.png" alt="Hearthstone logo title"></a>
+        <a href="/"><img src="../static/images/Hearthstone_logo.jpg" alt="Hearthstone logo title"></a>
         <div>
             <ul class="nav-links">
                 <li><a class="nav-link" href="/profile">Profile</a></li>
-                <li><a class="nav-link" href="/builder">Deck Builder</a></li>
+                <li><a class="nav-link" href="/api_call">Deck Builder</a></li>
                 <li><a class="nav-link" href="/match">Match'em up</a></li>
                 <li><a class="nav-link" href="/login">Logout</a></li>
             </ul>
@@ -21,5 +21,6 @@
     </nav>
     <header>Inn Keepers Daughter</header>
     <main>{% block main %}{% endblock %}</main>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

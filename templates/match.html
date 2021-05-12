@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+<button id='test-button'>Send JSON</button>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename = 'match.js') }}"></script>
+{% endblock %}
