@@ -8,7 +8,7 @@ import sqlite3
 
 # config app
 app = Flask(__name__)
-# use config file
+# configure app using config.py file
 app.config.from_object('config.Config')
 
 Session(app)
@@ -27,7 +27,8 @@ hearthstone = oauth.register(
     client_kwargs = {"scope":"openid"}
 )
 
-# Create connection with DB, preform query, return result set, close DB connection 
+# Create connection with DB, preform query, return result set, close DB connection
+# Params need to be set as tuples (with a ,) 
 def SQL(query, p1=None):
     conn = sqlite3.connect("hearthstone.db")
     with conn:
@@ -52,7 +53,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
+# function only loads "profile.html" right now
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def profile():
@@ -61,7 +62,7 @@ def profile():
     #print(battle_tag, user_id)
     return render_template("profile.html")
 
-# Handles user login checking and login
+# Handles checking user login credentials and login
 @app.route("/login", methods=["GET", "POST"])
 def login():
     session.clear()
@@ -107,15 +108,16 @@ def register():
         if query_result[0][0] == 1 or username == "":
             error = "Username already in use or field was left blank."
         elif password == "" or not password == confirm:
-            error = "Passwords do not match or field was left blank"
+            error = "Password field was left blank or passwords do not match"
         else:
             # hash password to store in DB
             PWhash = generate_password_hash(password, method='pbkdf2:sha256')
             SQL("INSERT INTO users (username, hash) VALUES (?, ?)", (username, PWhash))
             return render_template("login.html")
-
+    # if route is requested through a GET request
     return render_template("register.html", error=error) 
 
+# Oauth functions for Battle.net login
 @app.route("/battlenet_login")
 @login_required
 def battlenet_login():
@@ -123,6 +125,7 @@ def battlenet_login():
     redirect_uri = url_for("authorize", _external=True)
     return hearthstone.authorize_redirect(redirect_uri)
 
+# Oauth func / save info to DB for BN logins & api calls
 @app.route("/authorize")
 def authorize():
     hearthstone = oauth.create_client("hearthstone")
@@ -148,9 +151,14 @@ def match():
 def api_card_call():
     # SQL query for current user access token
     token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
-    # make api call for a minion card and store in response var
-    response = requests.get("https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&access_token=" + token[0][0])
-    # save response as json in var
+    
+    #   Make a loop and get data from all 5 pages then send it to js
+    # make api call and store in response var
+    # api call params currently
+    # minion and 500 results per page
+    response = requests.get(
+        "https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&pageSize=500&access_token=" + token[0][0])
+    # save response text to convert to JSON
     json_cards = response.text
     # sends minion cards to JS file
     return jsonify(json_cards)

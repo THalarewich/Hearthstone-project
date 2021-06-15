@@ -5,7 +5,45 @@
 {% endblock %}
 
 {% block main %}
-<button id='test-button'>Send JSON</button>
+<button id='test-button'>Shuffle Cards</button>
+<div id='game-board'>
+    <div class='row'>
+        <ul class='card-row first-row'>
+            <li class='col 1'></li>
+            <li class='col 2'></li>
+            <li class='col 3'></li>
+            <li class='col 4'></li>
+            <li class='col 5'></li>
+        </ul>
+    </div>
+    <div class='row'>
+        <ul class='card-row second-row'>
+            <li class='col 1'></li>
+            <li class='col 2'></li>
+            <li class='col 3'></li>
+            <li class='col 4'></li>
+            <li class='col 5'></li>
+        </ul>
+    </div>
+    <div class='row'>
+        <ul class='card-row third-row'>
+            <li class='col 1'></li>
+            <li class='col 2'></li>
+            <li class='col 3'></li>
+            <li class='col 4'></li>
+            <li class='col 5'></li>
+        </ul>
+    </div>
+    <div class='row'>
+        <ul class='card-row forth-row'>
+            <li class='col 1'></li>
+            <li class='col 2'></li>
+            <li class='col 3'></li>
+            <li class='col 4'></li>
+            <li class='col 5'></li>
+        </ul>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename = 'match.js') }}"></script>
