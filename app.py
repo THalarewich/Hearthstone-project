@@ -147,17 +147,23 @@ def deck_builder():
 def match():
     return render_template("match.html")
 
-@app.route("/api_call")
-def api_card_call():
+@app.route("/api_call/<card>")
+def api_card_call(card):
     # SQL query for current user access token
     token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
-    
+    response = ''
     #   Make a loop and get data from all 5 pages then send it to js
     # make api call and store in response var
-    # api call params currently
+    # api call params for card face currently
     # minion and 500 results per page
-    response = requests.get(
+    if card == 'face':
+        # returns card face/info
+        response = requests.get(
         "https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&pageSize=500&access_token=" + token[0][0])
+    elif card == 'back':
+        # returns card backs
+        response = requests.get(
+        "https://us.api.blizzard.com/hearthstone/cardbacks?locale=en_US&pageSize=500&sort=dateAdded%3Adesc&order (deprecated)=desc&access_token="  + token[0][0])
     # save response text to convert to JSON
     json_cards = response.text
     # sends minion cards to JS file
