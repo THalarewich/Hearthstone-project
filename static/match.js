@@ -2,6 +2,7 @@
 // var to hold cards sent from Flask
 let fullDeck = {};
 let cardsFaceDown;
+let cardsFaceUp = [];
 const shuffle = document.getElementById('test-button');
 // html collection of li elements as game board spaces
 const gameSpaces = document.getElementsByClassName('col');
@@ -80,23 +81,54 @@ fetchCards().then(([face, back]) => {
 
 // click event listener to each card 
 // error handling for any element ancestor of flip-card-inner??
+// error handling for flipping over more then 2 cards at once
 function flipCards() {
     Array.from(cardsFaceDown).forEach(item => {
         item.addEventListener('click', e => {
             let targetCard = e.target;
             let found = false;
-            console.log(e.target);
             // if correct div is selected add animation class
             while(found == false){
                 if(targetCard.className === 'flip-card-inner'){
                     targetCard.classList.add('selected-card');
+                    cardsFaceUp.push({
+                        cardClicked: targetCard,
+                        cardImage: targetCard.firstElementChild.firstElementChild.src
+                    });
                     found = true;
                 } else{
                     targetCard = targetCard.parentNode;
                 }
             }
+            matchCards();
         })
     })
+}
+
+// use an array with the max length of 2 to check the 2 cards face up if they are a match
+function matchCards(){
+    if(cardsFaceUp.length == 2){
+        if(cardsFaceUp[0].cardImage == cardsFaceUp[1].cardImage){
+            // you've made a match
+            // remove selected-card class and make cards disapper from board
+            setTimeout(() => {
+                for(let i = cardsFaceUp.length - 1; i >= 0; i--){
+                    let card = cardsFaceUp[i].cardClicked;
+                    card.classList.add('discarded');
+                    card.classList.remove('selected-card');
+                    cardsFaceUp.pop();
+                }
+            }, 2000);
+        } else{
+            // clear cardsFaceUp array and remove .selected-card class from cards to turn them back over
+            setTimeout(() => {
+                for(let i = cardsFaceUp.length - 1; i >= 0; i--){
+                    cardsFaceUp[i].cardClicked.classList.remove('selected-card');
+                    cardsFaceUp.pop();
+                }
+            }, 2000);
+        }
+    }
 }
 
 shuffle.addEventListener('click', fillDeck);

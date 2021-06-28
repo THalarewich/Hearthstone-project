@@ -92,6 +92,10 @@ div.row .card-row{
 .selected-card {
     transform: rotateY(180deg);
 }
+
+.discarded {
+    visibility: hidden;
+}
   
   /* this block does some weird shit with sizing of game board */
 .flip-card-front, .flip-card-back {
