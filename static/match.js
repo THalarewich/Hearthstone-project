@@ -1,8 +1,12 @@
 // card flipping game
-// var to hold cards sent from Flask
+
+// holds data from api calls
 let fullDeck = {};
+// 
 let cardsFaceDown;
+// array for cards that are currently face up
 let cardsFaceUp = [];
+// html button for new game
 const shuffle = document.getElementById('test-button');
 // html collection of li elements as game board spaces
 const gameSpaces = document.getElementsByClassName('col');
@@ -18,6 +22,16 @@ async function fetchCards() {
     const back = await backResponse.json();
     return [face, back];
 };
+
+// Make shuffle button show up on UI only after fullDeck is populated
+// error handling?? .catch?
+fetchCards().then(([face, back]) => {
+    shuffle.style.display = 'block';
+    return fullDeck = {
+        face: JSON.parse(face), 
+        back: JSON.parse(back)
+    };
+});
 
 // randomly select a card back from the api
 // populate array with random 10 cards and create doubles
@@ -43,9 +57,9 @@ function fillDeck(){
     }
     fillBoard(cardsInPlay, cardBack);
 }
+
 // insert card imgs into html game board
 function fillBoard(deck, cardBack){
-    console.log(cardBack.image);
     for(let i = 0; i < gameSpaces.length; i++){
         // insert html structure and card images for game/flipping animation
         let flippingCard = 
@@ -61,43 +75,33 @@ function fillBoard(deck, cardBack){
             </div>`;
         gameSpaces[i].innerHTML = flippingCard;
     }
+    //              start a timer for how long the round will take
+    //              save PBs for profile of website
     cardsFaceDown = document.getElementsByClassName('flip-card');
     flipCards();
 }
 
-// make a html collection for every .flip-card 
-// after they are generated in the for loop in filBoard()
-// use that html collection to add click event listeners
-
-// Make shuffle button show up on UI only after fullDeck is populated
-// error handling?? .catch?
-fetchCards().then(([face, back]) => {
-    shuffle.style.display = 'block';
-    return fullDeck = {
-        face: JSON.parse(face), 
-        back: JSON.parse(back)
-    };
-});
-
 // click event listener to each card 
 // error handling for any element ancestor of flip-card-inner??
-// error handling for flipping over more then 2 cards at once
 function flipCards() {
-    Array.from(cardsFaceDown).forEach(item => {
-        item.addEventListener('click', e => {
+    Array.from(cardsFaceDown).forEach(card => {
+        card.addEventListener('click', e => {
             let targetCard = e.target;
             let found = false;
-            // if correct div is selected add animation class
-            while(found == false){
-                if(targetCard.className === 'flip-card-inner'){
-                    targetCard.classList.add('selected-card');
-                    cardsFaceUp.push({
-                        cardClicked: targetCard,
-                        cardImage: targetCard.firstElementChild.firstElementChild.src
-                    });
-                    found = true;
-                } else{
-                    targetCard = targetCard.parentNode;
+            // if 2 cards are flipped already dont do anything
+            if(cardsFaceUp.length <= 1){
+                // if correct div is selected add animation class
+                while(found == false){
+                    if(targetCard.className === 'flip-card-inner'){
+                        targetCard.classList.add('selected-card');
+                        cardsFaceUp.push({
+                            cardClicked: targetCard,
+                            cardImage: targetCard.firstElementChild.firstElementChild.src
+                        });
+                        found = true;
+                    } else{
+                        targetCard = targetCard.parentNode;
+                    }
                 }
             }
             matchCards();

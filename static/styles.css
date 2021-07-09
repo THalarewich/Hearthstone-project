@@ -31,7 +31,7 @@ img{
     width: 140%;
 
 }
-.nav-links li, .row li{
+.nav-links li, .row li, .drop-down li{
     list-style: none;
     text-decoration: none;
 }
@@ -119,4 +119,28 @@ div.row .card-row{
     /* background-color: dodgerblue;
     color: white; */
     transform: rotateY(180deg);
+}
+
+/* Deck Builder CSS */
+#pick-a-class{
+    position: absolute;
+    background-color:rgba(105, 2, 2, 0.664);
+
+}
+#filter-buttons{
+    /* display: none; */
+    display: flex;
+}
+#pick-a-class{
+    display: none;
+}
+.deck-class:hover{
+    color: white;
+    cursor: pointer;
+}
+.drop-down{
+    visibility: hidden;
+}
+.selected-filter{
+    visibility: visible;
 }

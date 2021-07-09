@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Deck Builder
+{% endblock %}
+
+{% block main %}
+<!-- 1. pick class -->
+<div id="pick-a-class">
+    <ul>
+        <li class="deck-class">Demon Hunter</li>
+        <li class="deck-class">Druid</li>
+        <li class="deck-class">Hunter</li>
+        <li class="deck-class">Mage</li>
+        <li class="deck-class">Paladin</li>
+        <li class="deck-class">Priest</li>
+        <li class="deck-class">Rogue</li>
+        <li class="deck-class">Shaman</li>
+        <li class="deck-class">Warlock</li>
+        <li class="deck-class">Warrior</li>
+    </ul>
+</div>
+<!-- filtered search -->
+<div id="filter-buttons">
+    <div class="attack">
+        <button id="attack-btn" class="filter-btn">Attack</button>
+        <div class="drop-down">
+            <ul>
+                <li class="filter-selection">Any Attack</li>
+                <li class="filter-selection">Attack: 0</li>
+                <li class="filter-selection">Attack: 1</li>
+                <li class="filter-selection">Attack: 2</li>
+                <li class="filter-selection">Attack: 3</li>
+                <li class="filter-selection">Attack: 4</li>
+                <li class="filter-selection">Attack: 5</li>
+                <li class="filter-selection">Attack: 6</li>
+                <li class="filter-selection">Attack: 7</li>
+                <li class="filter-selection">Attack: 8</li>
+                <li class="filter-selection">Attack: 9</li>
+                <li class="filter-selection">Attack: 10+</li>
+            </ul>
+        </div>
+    </div>
+    <div class="health">
+        <button id="health-btn" class="filter-btn">Health</button>
+        <div class="drop-down">
+            <ul>
+                <li class="filter-selection">Any Health</li>
+                <li class="filter-selection">Health: 0</li>
+                <li class="filter-selection">Health: 1</li>
+                <li class="filter-selection">Health: 2</li>
+                <li class="filter-selection">Health: 3</li>
+                <li class="filter-selection">Health: 4</li>
+                <li class="filter-selection">Health: 5</li>
+                <li class="filter-selection">Health: 6</li>
+                <li class="filter-selection">Health: 7</li>
+                <li class="filter-selection">Health: 8</li>
+                <li class="filter-selection">Health: 9</li>
+                <li class="filter-selection">Health: 10+</li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-type">
+        <button id="card-type-btn" class="filter-btn">Card Type</button>
+        <div class="drop-down">
+            <ul>
+                <li class="filter-selection">Any Type</li>
+                <li class="filter-selection">Hero</li>
+                <li class="filter-selection">Minion</li>
+                <li class="filter-selection">Spell</li>
+                <li class="filter-selection">Weapon</li>
+            </ul>
+        </div>
+    </div>
+    <div class="mana-gem">
+        <button id="mana-gem-btn" class="filter-btn">Mana Gem</button>
+        <div class="drop-down">
+            <ul>
+                <li class="filter-selection">Any Mana Gem</li>
+                <li class="filter-selection">Mana Gem: 0</li>
+                <li class="filter-selection">Mana Gem: 1</li>
+                <li class="filter-selection">Mana Gem: 2</li>
+                <li class="filter-selection">Mana Gem: 3</li>
+                <li class="filter-selection">Mana Gem: 4</li>
+                <li class="filter-selection">Mana Gem: 5</li>
+                <li class="filter-selection">Mana Gem: 6</li>
+                <li class="filter-selection">Mana Gem: 7</li>
+                <li class="filter-selection">Mana Gem: 8</li>
+                <li class="filter-selection">Mana Gem: 9</li>
+                <li class="filter-selection">Mana Gem: 10+</li>
+            </ul>
+        </div>
+    </div>
+    <div class="minion-type">
+        <button id="minion-type-btn" class="filter-btn">Minion Type</button>
+        <div class="drop-down">
+            <ul>
+                <li class="filter-selection">Any Type</li>
+                <li class="filter-selection">All</li>
+                <li class="filter-selection">Beast</li>
+                <li class="filter-selection">Demon</li>
+                <li class="filter-selection">Dragon</li>
+                <li class="filter-selection">Elemental</li>
+                <li class="filter-selection">Mech</li>
+                <li class="filter-selection">Murloc</li>
+                <li class="filter-selection">Pirate</li>
+                <li class="filter-selection">Quilboar</li>
+                <li class="filter-selection">Totem</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- full screen on right side of screen on desktop, controlled dynamically by JS -->
+<div id="current-deck">
+
+</div>
+
+<!-- under card filters, data (imgs) inserted by JS dynamically -->
+<div id="search-results">
+
+</div>
+<!-- check off different filters to see different cards -->
+<!-- add to deck button -->
+<!-- deck on side of screen with mouse over to enlarge cards -->
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename = 'builder.js') }}"></script>
+{% endblock %}
