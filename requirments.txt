@@ -1,4 +1,6 @@
-Flask
+flask
 Flask-Session
 requests
-dotenv
+python-dotenv
+authlib
+pysqlite3

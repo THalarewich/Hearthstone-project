@@ -125,14 +125,13 @@ div.row .card-row{
 #pick-a-class{
     position: absolute;
     background-color:rgba(105, 2, 2, 0.664);
-
 }
 #filter-buttons{
     /* display: none; */
     display: flex;
 }
-#pick-a-class{
-    display: none;
+.hidden{
+    visibility: hidden;
 }
 .deck-class:hover{
     color: white;
@@ -141,6 +140,33 @@ div.row .card-row{
 .drop-down{
     visibility: hidden;
 }
+.filter-selection:hover{
+    cursor: pointer;
+    color: white;
+}
+/* class that is added and removed to have only one filter catagory drop down showing at a time */
 .selected-filter{
     visibility: visible;
+}
+
+/* card results section */
+
+/* wrapper div for cards generated in JS */
+.wrapper{
+    display: flex;
+    flex-wrap: wrap;
+}
+.main-content{
+    display: flex;
+    flex-direction: row-reverse;
+}
+#current-deck{
+    width:30%;
+    height: 70vh;
+    border: 2px solid red;
+}
+#search-results{
+    width:70%;
+    height: auto;
+    border: 2px solid black;
 }

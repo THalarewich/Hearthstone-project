@@ -147,24 +147,68 @@ def deck_builder():
 def match():
     return render_template("match.html")
 
-@app.route("/api_call/<card>")
+@app.route("/api_call/<card>", methods=["GET", "POST"])
 def api_card_call(card):
     # SQL query for current user access token
     token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
     response = ''
-    #   Make a loop and get data from all 5 pages then send it to js
-    # make api call and store in response var
-    # api call params for card face currently
-    # minion and 500 results per page
-    if card == 'face':
-        # returns card face/info
-        response = requests.get(
-        "https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&pageSize=500&access_token=" + token[0][0])
-    elif card == 'back':
-        # returns card backs
-        response = requests.get(
-        "https://us.api.blizzard.com/hearthstone/cardbacks?locale=en_US&pageSize=500&sort=dateAdded%3Adesc&order (deprecated)=desc&access_token="  + token[0][0])
-    # save response text to convert to JSON
+    # currently working to receive data from fetch call in builder.js?
+    #   call only works on page load currently
+    if request.method == "POST":
+        # store search params from user 
+        # use params to request certian data from api
+        klass = None
+        attack = None
+        health = None
+        card_type = None
+        mana_cost = None
+        minion_type = None
+        card_search_url = "https://us.api.blizzard.com/hearthstone/cards?locale=en_US&set=standard&pageSize=500&access_token=" + token[0][0]
+
+        print(token[0][0])
+        search_params = request.get_json()
+        if search_params["class"] != None:
+            klass = "class=" + search_params["class"].lower().replace(" ", "") + "%2Cneutral"
+            card_search_url += "&" + klass
+            print(klass)
+        if search_params["attack"] != None:
+            attack = "attack=" + search_params["attack"].replace("Attack: ", "")
+            card_search_url += "&" + attack
+            print(attack)
+        if search_params["health"] != None:
+            health = "health=" + search_params["health"].replace("Health: ", "")
+            card_search_url += "&" + health
+            print(health)
+        if search_params["cardType"] != None:
+            card_type = "type=" + search_params["cardType"].lower()
+            card_search_url += "&" + card_type
+            print(card_type)
+        if search_params["manaCost"] != None:
+            mana_cost = "manaCost=" + search_params["manaCost"].replace("Mana Cost: ", "")
+            card_search_url += "&" + mana_cost
+            print(mana_cost)
+        if search_params["minionType"] != None:
+            minion_type = "minionType=" + search_params["minionType"].lower()
+            card_search_url += "&" + minion_type
+            print(minion_type)
+        print(card_search_url)
+        print(search_params)
+        # use set=standard to get only standard cards to show
+        response = requests.get(card_search_url)
+    else:
+        #   Make a loop and get data from all 5 pages then send it to js
+        # make api call and store in response var
+        # api call params for card face currently
+        # minion and 500 results per page
+        if card == 'face':
+            # returns card face/info
+            response = requests.get(
+            "https://us.api.blizzard.com/hearthstone/cards?locale=en_US&type=minion&pageSize=500&access_token=" + token[0][0])
+        elif card == 'back':
+            # returns card backs
+            response = requests.get(
+            "https://us.api.blizzard.com/hearthstone/cardbacks?locale=en_US&pageSize=500&sort=dateAdded%3Adesc&order (deprecated)=desc&access_token="  + token[0][0])
+        # save response text to convert to JSON
     json_cards = response.text
-    # sends minion cards to JS file
+        # sends minion cards to JS file
     return jsonify(json_cards)

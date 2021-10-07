@@ -122,7 +122,7 @@ function matchCards(){
                     card.classList.remove('selected-card');
                     cardsFaceUp.pop();
                 }
-            }, 2000);
+            }, 1500);
         } else{
             // clear cardsFaceUp array and remove .selected-card class from cards to turn them back over
             setTimeout(() => {
@@ -130,7 +130,7 @@ function matchCards(){
                     cardsFaceUp[i].cardClicked.classList.remove('selected-card');
                     cardsFaceUp.pop();
                 }
-            }, 2000);
+            }, 1500);
         }
     }
 }

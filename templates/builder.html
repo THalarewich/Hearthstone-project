@@ -21,7 +21,7 @@
     </ul>
 </div>
 <!-- filtered search -->
-<div id="filter-buttons">
+<div id="filter-buttons" class="hidden">
     <div class="attack">
         <button id="attack-btn" class="filter-btn">Attack</button>
         <div class="drop-down">
@@ -72,22 +72,22 @@
             </ul>
         </div>
     </div>
-    <div class="mana-gem">
-        <button id="mana-gem-btn" class="filter-btn">Mana Gem</button>
+    <div class="mana-cost">
+        <button id="mana-cost-btn" class="filter-btn">Mana Cost</button>
         <div class="drop-down">
             <ul>
-                <li class="filter-selection">Any Mana Gem</li>
-                <li class="filter-selection">Mana Gem: 0</li>
-                <li class="filter-selection">Mana Gem: 1</li>
-                <li class="filter-selection">Mana Gem: 2</li>
-                <li class="filter-selection">Mana Gem: 3</li>
-                <li class="filter-selection">Mana Gem: 4</li>
-                <li class="filter-selection">Mana Gem: 5</li>
-                <li class="filter-selection">Mana Gem: 6</li>
-                <li class="filter-selection">Mana Gem: 7</li>
-                <li class="filter-selection">Mana Gem: 8</li>
-                <li class="filter-selection">Mana Gem: 9</li>
-                <li class="filter-selection">Mana Gem: 10+</li>
+                <li class="filter-selection">Any Mana Cost</li>
+                <li class="filter-selection">Mana Cost: 0</li>
+                <li class="filter-selection">Mana Cost: 1</li>
+                <li class="filter-selection">Mana Cost: 2</li>
+                <li class="filter-selection">Mana Cost: 3</li>
+                <li class="filter-selection">Mana Cost: 4</li>
+                <li class="filter-selection">Mana Cost: 5</li>
+                <li class="filter-selection">Mana Cost: 6</li>
+                <li class="filter-selection">Mana Cost: 7</li>
+                <li class="filter-selection">Mana Cost: 8</li>
+                <li class="filter-selection">Mana Cost: 9</li>
+                <li class="filter-selection">Mana Cost: 10+</li>
             </ul>
         </div>
     </div>
@@ -112,13 +112,19 @@
 </div>
 
 <!-- full screen on right side of screen on desktop, controlled dynamically by JS -->
-<div id="current-deck">
+<div class="main-content">
+    <div id="current-deck">
 
-</div>
+    </div>
 
-<!-- under card filters, data (imgs) inserted by JS dynamically -->
-<div id="search-results">
+    <!-- under card filters, data (imgs) inserted by JS dynamically -->
+    <!-- container div -->
+    <div id="search-results">
+        <!-- wrapper div -->
+        <div class="wrapper">
 
+        </div>
+    </div>
 </div>
 <!-- check off different filters to see different cards -->
 <!-- add to deck button -->
