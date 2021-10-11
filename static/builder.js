@@ -8,8 +8,6 @@
 
 // todo in this file
 // implement 
-//      what happens when cards are selected for the deck / removed
-//          follow hearthstone deck building rules
 //      if a user wants to change deck classes
 //      user clicks else where on page while a drop down menu is open
 //      able to save deck to your account
@@ -20,7 +18,9 @@
 // dynamic filter menu
 // currentDeck will hold values for:
 //      cards selected by user (and amount per card)
-const currentDeck = [];
+//      amount of total cards (including doubles)
+const currentDeck = [{card_count: 0}];
+
 // hold values from the filter menus to pass to flask in order for api calls
 //      show current search params on screen for user to disable specific search params
 //      ^^(when specific params are disabled call api search func to refresh cards on page)^^
@@ -32,8 +32,6 @@ const currentSearch = {
     manaCost: null,
     minionType: null
 };
-// // card api data sent back from flask
-// const searchResults = {};
 
 // filter selection divs
 const filterButtons = document.getElementById('filter-buttons');
@@ -41,6 +39,9 @@ const classSelection = document.getElementById('pick-a-class');
 
 // search result div
 const resultsDiv = document.getElementById('search-results');
+
+// current deck div
+const currentDeckDiv = document.getElementById('current-deck');
 
 // possible selection of deck class
 const deckClasses = document.getElementsByClassName('deck-class');
@@ -55,37 +56,98 @@ let searchResults;
 let returnedCards;
 
 
-// add event listener to each card after they are displayed
-function selectCards() {
-    returnedCards.forEach(card => {
+// TODO: Make an X to be clicked instead of the whole card?
+//      Display amount of each card in the deck
+// when a card in the deck is clicked
+function deckCards() {
+    let deckDisplayed = Array.from(document.getElementsByClassName('selected-card'));
+    deckDisplayed.forEach(card => {
         card.addEventListener('click', e => {
-            if(e.target.parentNode.classList.contains('returned-card')) {
-                currentDeck.push({
-                    // take a look at using searchResults obj and using array filter method to find card by ID 
-                    //      so the whole card obj can be stored in current deck, to later be stored in the DB
-                    cardID: e.target.classList[0],
-                    cardImg: e.target.src,
-                    name: e.target.alt
-                });
-                console.log(e.target.classList[0]);
+            let cardIndex = currentDeck.findIndex(card => card.id == e.target.classList[0]);
+            // if there is a double remove one
+            if(currentDeck[cardIndex].amount == 2) {
+                currentDeck[cardIndex].amount = 1;
+                currentDeck[0].card_count --;
+            // remove completly if there is one
+            }else if(currentDeck[cardIndex].amount == 1) {
+                currentDeck.splice(cardIndex, 1);
+                currentDeck[0].card_count --;
+                let parentDiv = e.target.parentNode;
+                if(parentDiv.classList.contains('selected-card')) {
+                    parentDiv.remove();
+                }
             }
         })
     })
 }
 
-// use obj in searchResults to display cards to the screen
-function displayResults() {
-    let cardsDisplayed = ``;
-    for(i = 0; i < searchResults.cards.length; i++) {
+// for each card displayed from api search
+//      will add clicked cards to currentDeck array for users deck
+//      no more then 2 of the same card in the deck and no more then 20 total cards
+function selectCards() {
+    returnedCards.forEach(card => {
+        card.addEventListener('click', e => {
+            console.log(e.target);
+            // makes sure the click target is a returned card from fetch api call
+            if(e.target.parentNode.classList.contains('returned-card')) {
+                // matches clicked card with the card obj that is sent from flask
+                let selectedCard = searchResults.cards.find(card => card.id == e.target.classList[0]);
+                // no more then 20 cards total
+                if(currentDeck[0].card_count < 20){
+                    // checks how many copies of selected card (if any) are already in the deck
+                    if(currentDeck.includes(selectedCard)){
+                        for(let i = 0; i < currentDeck.length; i++){
+                            if(currentDeck[i].id == selectedCard.id){
+                                if(currentDeck[i].amount > 1){
+                                    console.log('error cannot hold more then 2 of those cards');
+                                    break;
+                                }else if(currentDeck[i].amount == 1){
+                                    currentDeck[i].amount = 2;
+                                    currentDeck[0].card_count += 1;
+                                    displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+                                    break;
+                                }
+                            }
+                        }
+                    // add selected card to deck
+                    }else {
+                        selectedCard.amount = 1;
+                        currentDeck.push(selectedCard);
+                        currentDeck[0].card_count += 1;
+                        displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+                    }
+                }else{
+                    console.log('error, you can not hold anymore cards in your deck')
+                }
+            }
+        })
+    })
+}
+
+
+// display the api search results/user selected cards for deck to be built
+// @param 1     pass in searchResults.cards / currentDeck
+// @param 2     index in which to start the for loop on ( 0 for results / 1 for deck)
+// @param 3     "returned-card" for results / "selected-card" for deck
+// @param 4     resultsDiv / currentDeckDiv
+function displayCards(cardPool, index, divClass, htmlDiv){
+    let cardsDisplayed = '';
+    for(let i = index; i < cardPool.length; i++){
         cardsDisplayed += `
-            <div class="returned-card">
-                <img class="${searchResults.cards[i].id}"src="${searchResults.cards[i].image}" alt="${searchResults.cards[i].name}">
+            <div class="${divClass}">
+                <img class="${cardPool[i].id}" src="${cardPool[i].image}" alt="${cardPool[i].name}">
             </div>`;
     }
-    resultsDiv.firstElementChild.innerHTML = cardsDisplayed;
-    returnedCards = Array.from(document.getElementsByClassName('returned-card'));
-    selectCards();
+    htmlDiv.firstElementChild.innerHTML = cardsDisplayed;
+    // populate returnedCards array / call event listener function if search results are changed
+    if(cardPool === searchResults.cards){
+        returnedCards = Array.from(document.getElementsByClassName('returned-card'));
+        selectCards();
+    }else{
+        deckCards();
+    }
 }
+
 
 async function apiSearch(filter = null) {
     //  after a filter option is selected make filter list hidden
@@ -104,13 +166,13 @@ async function apiSearch(filter = null) {
     // take the JSON in the response and store it
     const searchJSON = await searchResponse.json();
     searchResults = JSON.parse(searchJSON);
-    displayResults();
+    displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
 }
 
 
-//              Event Listeners
+//              Event Listeners for filter selections
 
-// Create event listeners to class options to store users class choice for deck
+// for class options to store users class choice for deck
 //      error handling (allow only one class to be choosen, hide class choices after class is chose)
 //      (allow a different class to be picked but alert user that any class specific cards will be lost)
 Array.from(deckClasses).forEach(klass => {
@@ -160,34 +222,11 @@ filterCatagories.forEach(filter => {
 })
 
 // add specific search params to currentSearch when clicked by user
-//          is there a way to reduce code used in this event handler??? DRY! 
-//          ^^(a seperate func to iterate over search params??)^^
-//      add if statements for the "any" selection in each menu (to NOT apply any filter and just remove said filter
-//      from api search)
 filterOptions.forEach(option => {
-    // * todo: create an array holding strings of html class names, loop through class names to minumize lines of code*
     option.addEventListener('click', e => {
         const filterCatagory = e.target.parentNode.parentNode.parentNode;
-        if(filterCatagory.classList.contains('attack')) {
-            currentSearch.attack = e.target.innerHTML;
-            // call api search func
-            apiSearch(e.target);
-        }else if(filterCatagory.classList.contains('health')) {
-            currentSearch.health = e.target.innerHTML;
-            // call api search func
-            apiSearch(e.target);
-        }else if(filterCatagory.classList.contains('card-type')) {
-            currentSearch.cardType = e.target.innerHTML;
-            // call api search func
-            apiSearch(e.target);
-        }else if(filterCatagory.classList.contains('mana-cost')) {
-            currentSearch.manaCost = e.target.innerHTML;
-            // call api search func
-            apiSearch(e.target);
-        }else if(filterCatagory.classList.contains('minion-type')) {
-            currentSearch.minionType = e.target.innerHTML;
-            // call api search func
-            apiSearch(e.target);
-        }
+        let filter = filterCatagory.classList[0];
+        currentSearch[`${filter}`] = e.target.innerHTML;
+        apiSearch(e.target);
     })
 })

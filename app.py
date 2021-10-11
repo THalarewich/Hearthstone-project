@@ -152,7 +152,6 @@ def api_card_call(card):
     # SQL query for current user access token
     token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
     response = ''
-    # currently working to receive data from fetch call in builder.js?
     #   call only works on page load currently
     if request.method == "POST":
         # store search params from user 
@@ -171,23 +170,23 @@ def api_card_call(card):
             klass = "class=" + search_params["class"].lower().replace(" ", "") + "%2Cneutral"
             card_search_url += "&" + klass
             print(klass)
-        if search_params["attack"] != None:
+        if search_params["attack"] != None and search_params["attack"] != "Any Attack":
             attack = "attack=" + search_params["attack"].replace("Attack: ", "")
             card_search_url += "&" + attack
             print(attack)
-        if search_params["health"] != None:
+        if search_params["health"] != None and search_params["health"] != "Any Health":
             health = "health=" + search_params["health"].replace("Health: ", "")
             card_search_url += "&" + health
             print(health)
-        if search_params["cardType"] != None:
+        if search_params["cardType"] != None and search_params["cardType"] != "Any Type":
             card_type = "type=" + search_params["cardType"].lower()
             card_search_url += "&" + card_type
             print(card_type)
-        if search_params["manaCost"] != None:
+        if search_params["manaCost"] != None and search_params["manaCost"] != "Any Mana Cost":
             mana_cost = "manaCost=" + search_params["manaCost"].replace("Mana Cost: ", "")
             card_search_url += "&" + mana_cost
             print(mana_cost)
-        if search_params["minionType"] != None:
+        if search_params["minionType"] != None and search_params["minionType"] != "Any Type":
             minion_type = "minionType=" + search_params["minionType"].lower()
             card_search_url += "&" + minion_type
             print(minion_type)
