@@ -11,7 +11,6 @@
 //      if a user wants to change deck classes
 //      user clicks else where on page while a drop down menu is open
 //      able to save deck to your account
-//      remove filters if the "any" selection is selected from different drop downs
 
 
 
@@ -36,6 +35,8 @@ const currentSearch = {
 // filter selection divs
 const filterButtons = document.getElementById('filter-buttons');
 const classSelection = document.getElementById('pick-a-class');
+// user selected current card filters
+const currentFilters = document.getElementById('current-filters');
 
 // search result div
 const resultsDiv = document.getElementById('search-results');
@@ -54,7 +55,12 @@ const filterOptions = Array.from(document.getElementsByClassName('filter-selecti
 // array of cards that are within the search results
 let searchResults;
 let returnedCards;
+let lastClickedCard;
 
+
+// TODO: allow user to remove current filters including class selection from the current search
+//      If class is removed or changed make user aware that all class specific cards will be removed from the deck
+//      use currentFilters var to add and remove on screen elements???
 
 // TODO: Make an X to be clicked instead of the whole card?
 //      Display amount of each card in the deck
@@ -85,38 +91,34 @@ function deckCards() {
 //      will add clicked cards to currentDeck array for users deck
 //      no more then 2 of the same card in the deck and no more then 20 total cards
 function selectCards() {
+    console.log('selectedCards func called')
     returnedCards.forEach(card => {
         card.addEventListener('click', e => {
-            console.log(e.target);
             // makes sure the click target is a returned card from fetch api call
             if(e.target.parentNode.classList.contains('returned-card')) {
                 // matches clicked card with the card obj that is sent from flask
                 let selectedCard = searchResults.cards.find(card => card.id == e.target.classList[0]);
+                // check to see if user selectedCard is already in the currentDeck
+                let filteredDeck = currentDeck.filter(card => card.id == selectedCard.id);
                 // no more then 20 cards total
                 if(currentDeck[0].card_count < 20){
-                    // checks how many copies of selected card (if any) are already in the deck
-                    if(currentDeck.includes(selectedCard)){
-                        for(let i = 0; i < currentDeck.length; i++){
-                            if(currentDeck[i].id == selectedCard.id){
-                                if(currentDeck[i].amount > 1){
-                                    console.log('error cannot hold more then 2 of those cards');
-                                    break;
-                                }else if(currentDeck[i].amount == 1){
-                                    currentDeck[i].amount = 2;
-                                    currentDeck[0].card_count += 1;
-                                    displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
-                                    break;
-                                }
-                            }
-                        }
-                    // add selected card to deck
-                    }else {
+                    // checks how many copies of selectedCard are in currentDeck
+                    if(filteredDeck.length > 0 && filteredDeck[0].amount == 2){
+                        console.log("You can't hold more then 2 of those cards");
+                    // if there is only one then add one more
+                    }else if(filteredDeck.length > 0 && filteredDeck[0].amount == 1){
+                        let index = currentDeck.indexOf(filteredDeck[0]);
+                        currentDeck[`${index}`].amount = 2;
+                        currentDeck[0].card_count += 1;
+                        displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+                    // if there is none then add one 
+                    }else{
                         selectedCard.amount = 1;
                         currentDeck.push(selectedCard);
                         currentDeck[0].card_count += 1;
                         displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
                     }
-                }else{
+                }else {
                     console.log('error, you can not hold anymore cards in your deck')
                 }
             }
@@ -169,12 +171,61 @@ async function apiSearch(filter = null) {
     displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
 }
 
+// event for user selected search params
+// *add if statement to deal with user clicking filters other then class
+function selectedFilters(){
+    const selectedFilterBtns = Array.from(document.getElementsByClassName('selected-filter-button'));
+    selectedFilterBtns.forEach(filter => {
+        filter.addEventListener('click', e => {
+            // *add a popup window telling user that removing class will remove all class specific cards from deck
+            if(e.target.parentNode.classList[0] == 'selected-class'){
+                // let popUp = document.getElementById(popUpUserInput);
+                // condition will be met when user agrees (need to implement)
+                if(true){
+                    // remove all class specific card from currentDeck obj
+                    // class id key and multi-class id key need to be checked
+                    // DH id 14
+                    // Druid id 2
+                    // Hunter id 3
+                    // Mage id 4
+                    // Pally id 5
+                    // Priest id 6
+                    // Rogue id 7
+                    // Shaman id 8
+                    // Warlock id 9
+                    // Warrior id 10
+                    for(let i = 1; i < currentDeck.length; i++){
+                        console.log(e.target.classList[1]);
+                        if (currentDeck[i].classId == e.target.classList[1] || 
+                            currentDeck[i].multiClassIds.includes(e.target.classList[1])) {
+                                currentDeck.splice(i, 1);
+                                currentDeck[0].card_count -= 1;
+                                i--;
+                        }
+                    }
+                    currentSearch.class = null;
+                    classSelection.classList.remove('hidden');            
+                    filterButtons.classList.add('hidden');
+                    displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+                }
+                // *remove all class specific cards from currentDeck obj
+            }else {
+                currentSearch[`${e.target.classList[1]}`] = null;
+            }
+            e.target.remove();
+            apiSearch();
+        })
+    })
+}
+
 
 //              Event Listeners for filter selections
 
 // for class options to store users class choice for deck
 //      error handling (allow only one class to be choosen, hide class choices after class is chose)
 //      (allow a different class to be picked but alert user that any class specific cards will be lost)
+// *** Cards currently will not show up after class selection 
+// *** Multiple class cards will show up not only the selected class
 Array.from(deckClasses).forEach(klass => {
     klass.addEventListener('click', e => {
         // * need to implement *
@@ -185,6 +236,10 @@ Array.from(deckClasses).forEach(klass => {
             currentSearch.class = e.target.innerHTML;
             classSelection.classList.add('hidden');            
             filterButtons.classList.remove('hidden');
+            currentFilters.firstElementChild.innerHTML = `
+                <button class="selected-filter-button ${e.target.classList[1]}">${e.target.innerHTML}</button>`;
+            selectedFilters();
+            apiSearch();
         }
         
     })
@@ -226,7 +281,15 @@ filterOptions.forEach(option => {
     option.addEventListener('click', e => {
         const filterCatagory = e.target.parentNode.parentNode.parentNode;
         let filter = filterCatagory.classList[0];
+        currentFilters.innerHTML += `
+            <button class="selected-filter-button ${filter}">${e.target.innerHTML}</button>`;
+        const selectedFilterBtns = Array.from(document.getElementsByClassName('selected-filter-button'));
+        if(currentSearch[`${filter}`] != null) {
+            let index = selectedFilterBtns.findIndex(btn => btn.classList[1] == filter);
+            selectedFilterBtns[index].remove();
+        }
         currentSearch[`${filter}`] = e.target.innerHTML;
         apiSearch(e.target);
+        selectedFilters();
     })
 })
