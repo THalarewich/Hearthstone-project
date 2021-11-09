@@ -8,17 +8,20 @@
 
 // todo in this file
 // implement 
-//      if a user wants to change deck classes
+//      if a user wants to change deck classes (add notification to alert that all class specific cards will be dropped)
+//          ^^^ probably done through CSS, then select the button clicks
+//      add a card counter for when there is multiple of one card (total counter too)
 //      user clicks else where on page while a drop down menu is open
-//      able to save deck to your account
-
+//      In app.py check on a way to fix the hacky json conversion & a way to check if a deck was already saved in the DB
+//      Save PB time for solving the matching game
+//      In Profile create a way to search users saved decks
 
 
 // dynamic filter menu
 // currentDeck will hold values for:
 //      cards selected by user (and amount per card)
 //      amount of total cards (including doubles)
-const currentDeck = [{card_count: 0}];
+const currentDeck = [{card_count: 0, deck_name: '', deck_class: ''}];
 
 // hold values from the filter menus to pass to flask in order for api calls
 //      show current search params on screen for user to disable specific search params
@@ -37,6 +40,8 @@ const filterButtons = document.getElementById('filter-buttons');
 const classSelection = document.getElementById('pick-a-class');
 // user selected current card filters
 const currentFilters = document.getElementById('current-filters');
+// save button
+const saveDeck = document.getElementById('save-deck');
 
 // search result div
 const resultsDiv = document.getElementById('search-results');
@@ -57,13 +62,14 @@ let searchResults;
 let returnedCards;
 let lastClickedCard;
 
-
 // TODO: allow user to remove current filters including class selection from the current search
 //      If class is removed or changed make user aware that all class specific cards will be removed from the deck
-//      use currentFilters var to add and remove on screen elements???
+
 
 // TODO: Make an X to be clicked instead of the whole card?
 //      Display amount of each card in the deck
+//      ^^^ both above done through CSS?
+
 // when a card in the deck is clicked
 function deckCards() {
     let deckDisplayed = Array.from(document.getElementsByClassName('selected-card'));
@@ -90,6 +96,7 @@ function deckCards() {
 // for each card displayed from api search
 //      will add clicked cards to currentDeck array for users deck
 //      no more then 2 of the same card in the deck and no more then 20 total cards
+//      cannot selected class cards unless specific class is selected
 function selectCards() {
     console.log('selectedCards func called')
     returnedCards.forEach(card => {
@@ -100,30 +107,41 @@ function selectCards() {
                 let selectedCard = searchResults.cards.find(card => card.id == e.target.classList[0]);
                 // check to see if user selectedCard is already in the currentDeck
                 let filteredDeck = currentDeck.filter(card => card.id == selectedCard.id);
-                // no more then 20 cards total
-                if(currentDeck[0].card_count < 20){
-                    // checks how many copies of selectedCard are in currentDeck
-                    if(filteredDeck.length > 0 && filteredDeck[0].amount == 2){
-                        console.log("You can't hold more then 2 of those cards");
-                    // if there is only one then add one more
-                    }else if(filteredDeck.length > 0 && filteredDeck[0].amount == 1){
-                        let index = currentDeck.indexOf(filteredDeck[0]);
-                        currentDeck[`${index}`].amount = 2;
-                        currentDeck[0].card_count += 1;
-                        displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
-                    // if there is none then add one 
-                    }else{
-                        selectedCard.amount = 1;
-                        currentDeck.push(selectedCard);
-                        currentDeck[0].card_count += 1;
-                        displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
-                    }
+                // add cards if all rules are met
+                if(currentSearch.class == null && selectedCard.classId == 12){
+                    checkDeck(selectedCard, filteredDeck);
+                }else if (currentSearch.class != null) {
+                    checkDeck(selectedCard, filteredDeck);
                 }else {
-                    console.log('error, you can not hold anymore cards in your deck')
+                    console.log("You cannot add class specific cards without selecting a deck class");
                 }
             }
         })
     })
+}
+
+function checkDeck(selectedCard, filteredDeck){
+    // no more then 20 cards total
+    if(currentDeck[0].card_count < 20){
+        // checks how many copies of selectedCard are in currentDeck
+        if(filteredDeck.length > 0 && filteredDeck[0].amount == 2){
+            console.log("You can't hold more then 2 of those cards");
+        // if there is only one then add one more
+        }else if(filteredDeck.length > 0 && filteredDeck[0].amount == 1){
+            let index = currentDeck.indexOf(filteredDeck[0]);
+            currentDeck[`${index}`].amount = 2;
+            currentDeck[0].card_count += 1;
+            displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+        // if there is none then add one 
+        }else{
+            selectedCard.amount = 1;
+            currentDeck.push(selectedCard);
+            currentDeck[0].card_count += 1;
+            displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+        }
+    }else {
+        console.log('error, you can not hold anymore cards in your deck');
+    }
 }
 
 
@@ -292,4 +310,37 @@ filterOptions.forEach(option => {
         apiSearch(e.target);
         selectedFilters();
     })
+})
+
+// check to see if the deck is full, save to DB
+saveDeck.addEventListener('click', async () => {
+    deckName = document.getElementById('deck-name').value;
+    if (deckName === '') {
+        console.log('you must name your deck, please fill out the deck name box');
+        return;
+    }else {
+        currentDeck[0].deck_name = deckName;
+    }
+
+    if (currentDeck[0].card_count < 20) {
+        console.log(`Your deck is not yet full, you need ${20 - currentDeck[0].card_count} more cards, consider adding more cards`);
+    }else if (currentDeck[0].card_count == 20){
+        currentDeck[0].deck_class = currentSearch.class;
+        // convert currentDeck data to JSON
+        // send data to flask
+        // save data in DB
+        // send notice back to JS to notify user deck is saved
+        const deckResponse = await fetch('/builder', {
+            headers: {
+                'Content-Type': 'application/json'
+            }, 
+            method: 'POST',
+            body: JSON.stringify(currentDeck)
+        })
+         // take the JSON in the response and store it
+        const messageJSON = await deckResponse.json();
+        // notify user of deck name if a deck with the same cards alreay exists
+        // notify if the deck was saved
+        console.log(messageJSON.deck_name, messageJSON.message);
+    }
 })

@@ -3,6 +3,7 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from authlib.integrations.flask_client import OAuth
 from functools import wraps
+import json
 import requests
 import sqlite3
 
@@ -140,7 +141,75 @@ def authorize():
 @app.route("/builder", methods=["GET", "POST"])
 def deck_builder():
     if request.method == "POST":
-        pass
+        deck = request.get_json()
+        deck_list = []
+        message = []
+        
+        # look into another way of dealing with the data from request
+        # hacky work around got past the error (unable to bind parameter 1 - probably unsupported type)
+            # using request.get_json() to take the json from the request and parse it to a python list
+            # then using json.dumps() to the serialize that python list into json
+
+        # use class of deck and user_id to narrow down what decks to check against
+        saved_decks = SQL('SELECT deck FROM decks WHERE user_id = ? AND class = ?', 
+            (session["user_id"], deck[0]["deck_class"]))
+        # once those decks are narrowed down, convert them from JSON to a list
+        for single_deck in saved_decks:
+            deck_list.append(json.loads(''.join(single_deck)))
+        i = 0
+        deck_found = False
+        # loop through lists to see if the same card make up is already in use
+        while i < len(deck_list) and deck_found == False:
+            deck_search = {
+                "matched_cards" : 0,
+                "start_pos" : 1
+            }
+            x = 1
+            while x < len(deck):
+                j = deck_search["start_pos"]
+                while j < len(deck_list[i]):
+                    # if card "x" in "deck" = card "j" in "deck" "i" from SQL query (deck_list)
+                    if deck[x]["id"] == deck_list[i][j]["id"]:
+                        # if card amount is the same
+                        if deck[x]["amount"] == deck_list[i][j]["amount"]:
+                            deck_search["matched_cards"] += deck[x]["amount"]
+                            # change order of the DB list to make search faster
+                            temp = deck_list[i][j]
+                            deck_list[i].pop(j)
+                            deck_list[i].insert(1, temp)
+                            deck_search["start_pos"] += 1
+                            print("match", i, x, j)
+                            x += 1
+                            break
+                    # if card "x" is not in deck_list[i] end the 2 inner loops to move to the next deck
+                    elif j == (len(deck_list[i]) - 1):
+                        x = len(deck)
+                    print('no match that time', i, x, j, deck_search["matched_cards"])
+                    # if card "x" doesnt match card "j" increase j by 1
+                    j += 1
+            if deck_search["matched_cards"] == 20:
+                # ***notify the user to let them know a deck with the same cards is already saved 
+                        # (return to the user the name of said deck)
+                deck_found = True
+                message = {
+                    "deck_name" : deck_list[i][0]["deck_name"],
+                    "message" : "You have already saved a deck with those cards"
+                }
+                print("deck found")
+            i += 1
+        if deck_found == False:
+            # save the 'deck'
+            # ***notify the user the deck has been saved
+            print("the deck has been saved!")
+            message = {
+                "message" : "Your deck has been saved"
+            }
+            SQL('INSERT INTO decks VALUES (?, ?, ?, ?)', 
+                (session["user_id"], deck[0]["deck_name"], json.dumps(deck), deck[0]["deck_class"]))
+        # ***return info to JS to display for user (whether the deck was saved or 
+            # already exists(if so send the name of the saved deck to JS))
+            # refresh builder.html template if deck was saved successfully
+        return jsonify(message)
     return render_template("builder.html")
 
 @app.route("/match")
