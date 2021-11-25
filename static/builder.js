@@ -5,16 +5,22 @@
 // no more then 2 of the same card (some cards have a max of 1)
 // you can't use class specific cards from another class
 
+// NOTES: 
+//      CSS class selectors
+//          'X' on deck cards class = 'delete'
+//          amount of each card class = 'card-amount'
+//      CSS TODO:
+//          popup window to notify user for when user clicks to drop deck class
+//          all console.log messages to be relayed to user on UI
+//              popups???
 
 // todo in this file
 // implement 
-//      if a user wants to change deck classes (add notification to alert that all class specific cards will be dropped)
-//          ^^^ probably done through CSS, then select the button clicks
-//      add a card counter for when there is multiple of one card (total counter too)
 //      user clicks else where on page while a drop down menu is open
 //      In app.py check on a way to fix the hacky json conversion & a way to check if a deck was already saved in the DB
-//      Save PB time for solving the matching game
-//      In Profile create a way to search users saved decks
+//      ***Save PB time for solving the matching game
+
+//      html class "selected-card" is in use by the match game, causing cards in deck in builder to appear mirrored
 
 
 // dynamic filter menu
@@ -25,7 +31,6 @@ const currentDeck = [{card_count: 0, deck_name: '', deck_class: ''}];
 
 // hold values from the filter menus to pass to flask in order for api calls
 //      show current search params on screen for user to disable specific search params
-//      ^^(when specific params are disabled call api search func to refresh cards on page)^^
 const currentSearch = {
     class: null,
     attack: null,
@@ -62,33 +67,29 @@ let searchResults;
 let returnedCards;
 let lastClickedCard;
 
-// TODO: allow user to remove current filters including class selection from the current search
-//      If class is removed or changed make user aware that all class specific cards will be removed from the deck
 
+// TODO:
+    //   display the 'X' on the top right corner of card/ card counter on the bottom of the card
+    //  ^^^ done through CSS
 
-// TODO: Make an X to be clicked instead of the whole card?
-//      Display amount of each card in the deck
-//      ^^^ both above done through CSS?
-
-// when a card in the deck is clicked
+// when a 'X' on the card in the deck is clicked, remove one copy from deck
 function deckCards() {
-    let deckDisplayed = Array.from(document.getElementsByClassName('selected-card'));
+    let deckDisplayed = Array.from(document.getElementsByClassName('delete'));
     deckDisplayed.forEach(card => {
         card.addEventListener('click', e => {
-            let cardIndex = currentDeck.findIndex(card => card.id == e.target.classList[0]);
+            // parentNode.previousSiblingNode.firstElementChild
+            let cardIndex = currentDeck.findIndex(card => 
+                card.id == e.target.parentNode.parentNode.firstElementChild.classList[0]);
             // if there is a double remove one
             if(currentDeck[cardIndex].amount == 2) {
                 currentDeck[cardIndex].amount = 1;
                 currentDeck[0].card_count --;
-            // remove completly if there is one
-            }else if(currentDeck[cardIndex].amount == 1) {
+            // remove completely if there is one 
+            }else if (currentDeck[cardIndex].amount == 1) {
                 currentDeck.splice(cardIndex, 1);
                 currentDeck[0].card_count --;
-                let parentDiv = e.target.parentNode;
-                if(parentDiv.classList.contains('selected-card')) {
-                    parentDiv.remove();
-                }
             }
+            displayCards(currentDeck, 1, 'selected-card', currentDeckDiv)
         })
     })
 }
@@ -98,7 +99,6 @@ function deckCards() {
 //      no more then 2 of the same card in the deck and no more then 20 total cards
 //      cannot selected class cards unless specific class is selected
 function selectCards() {
-    console.log('selectedCards func called')
     returnedCards.forEach(card => {
         card.addEventListener('click', e => {
             // makes sure the click target is a returned card from fetch api call
@@ -151,11 +151,16 @@ function checkDeck(selectedCard, filteredDeck){
 // @param 3     "returned-card" for results / "selected-card" for deck
 // @param 4     resultsDiv / currentDeckDiv
 function displayCards(cardPool, index, divClass, htmlDiv){
-    let cardsDisplayed = '';
+    let cardsDisplayed = `
+        ${(cardPool == currentDeck) ? `<span>Cards in deck: ${currentDeck[0].card_count}</span>` : ""}`;
     for(let i = index; i < cardPool.length; i++){
         cardsDisplayed += `
             <div class="${divClass}">
                 <img class="${cardPool[i].id}" src="${cardPool[i].image}" alt="${cardPool[i].name}">
+                ${cardPool[i].amount ? `<div>
+                        <span class="card-amount">${cardPool[i].amount}</span>
+                        <span class="delete">X</span>
+                        </div>` : ""}
             </div>`;
     }
     htmlDiv.firstElementChild.innerHTML = cardsDisplayed;
@@ -184,8 +189,12 @@ async function apiSearch(filter = null) {
         body: JSON.stringify(currentSearch)
     })
     // take the JSON in the response and store it
+    // ***do i really need to use both .json() and JSON.parse()???
+    // ^ if they are close to the same thing then why do i need both of them in this function
     const searchJSON = await searchResponse.json();
+    console.log(searchJSON);
     searchResults = JSON.parse(searchJSON);
+    console.log(searchResults);
     displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
 }
 

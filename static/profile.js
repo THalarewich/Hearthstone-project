@@ -1,0 +1,172 @@
+// search saved decks
+// display PB match time
+// allow user to delete saved decks
+// carousel for displaying decks? (too ambitious?)
+
+//          PBs DISPLAY
+// is it easier to have flask embed the PB times into the html and modify if needed from JS
+// rather then sending request from JS to flask to send the data back to JS to be displayed
+
+//          USER SEARCH FUNCTION
+// collect user input on click event
+// check user input is valid
+// convert user input to JSON and send to flask
+// query the input to SQL 
+// return queried results back to JS to display
+
+//          DISPLAY DECKS
+// figure out a good way to display the returned decks for the user to view
+// a clear and readable way to scroll through returned decks w/o taking up whole page
+
+//          USER DELETE DECKS
+// allow user to click an 'X' on a deck
+// prompt user asking if they are sure they want to delete deck (will be gone forever)
+// send request to flask to delete deck in SQL db
+
+const searchParams = {
+    deckClass: null,
+    deckName: null
+};
+let returnedDecks = [];
+
+const searchBTN = document.getElementById('search-decks');
+// html ele for inserting returned decks
+const deckViewing = document.getElementById('returned-decks');
+
+// verify user input before making fetch request
+function inputCheck(){
+    // radio btns
+    const deckClasses = document.getElementsByName('deck-class');
+    // input search field
+    const deckName = document.getElementById('search').value;
+    // find which radio btn was selected
+    for(let i = 0; i < deckClasses.length; i++) {
+        if(deckClasses[i].checked) {
+            searchParams.deckClass = String(deckClasses[i].value);
+        }
+    }
+    if(deckName != '') {
+        searchParams.deckName = String(deckName);
+    }
+    // return bool depending on user input
+    if(searchParams.deckClass === null && searchParams.deckName === null){
+        return false;
+    }else {
+        return true;
+    }
+}
+
+// make fetch request to flask to search db for decks with searchParams
+async function searchDecks() {
+    const searchResponse = await fetch('/profile', {
+        headers: {
+            'Content-Type': 'application/json'
+        }, 
+        method: 'POST',
+        body: JSON.stringify(searchParams)
+    })
+    // take the JSON in the response and store it
+    
+    // ***do i really need to use both .json() and JSON.parse()???
+    //  .json() and JSON.parse() do close to the same thing?
+    const searchJSON = await searchResponse.json();
+    return searchJSON;
+}
+
+// take returned data from flask and display on page for user to view
+function displayDecks() {
+    let printDecks = document.getElementById('deck-count');
+    if(returnedDecks.deckCount > 0) {
+        let displayDeck = '';
+        for(const deckID in returnedDecks) {
+            let cardNames = [];
+            // do not use property 'deckCount' for the following
+            if(returnedDecks[deckID] !== returnedDecks.deckCount) {
+                // collect card names from deck
+                for(let i = 1; i < returnedDecks[`${deckID}`].length; i++){
+                    cardNames.push(returnedDecks[`${deckID}`][i].name);
+                }
+                // this will be changed when implementing CSS styles to have each deck be a carousel
+                displayDeck += `
+                    <div>
+                        <span class="delete" id="${deckID}">X</span>
+                        <h3>${returnedDecks[`${deckID}`][0].deck_name}</h3>
+                        <h4>${returnedDecks[`${deckID}`][0].deck_class}</h4>
+                        <p>${cardNames}</p>
+                    </div>`;
+            }else {
+                // message on how many decks where returned and under what search criteria
+                let deckClass = '';
+                let deckName = '';
+                (searchParams.deckClass != null ? deckClass = ` for the class ${searchParams.deckClass}` : null);
+                (searchParams.deckName != null ? deckName = ` with the name ${searchParams.deckName}` : null);
+                // *** a way to add the 's' to deck if there is more then one
+                let deckCount = `
+                    <h3>
+                        Deck search${deckClass}${deckName} returned ${returnedDecks.deckCount} decks
+                    </h3>`
+                printDecks.innerHTML = deckCount;
+            }
+            deckViewing.innerHTML = displayDeck;
+        }
+        deckDelete();
+    }else {
+        // clear previously returned decks from page
+        deckViewing.innerHTML = '';
+        printDecks.innerHTML = '<h3>You do not have any decks saved that meet your search criteria</h3>';
+    }
+}
+
+function deckDelete() {
+    const X = Array.from(document.getElementsByClassName('delete'));
+    X.forEach(deck => {
+        deck.addEventListener('click', async e => {
+            // find the deck the user selected
+            // save ID and name in a var
+            // send ID and name to flask
+            console.log(e.target.id);
+            console.log(e.target.nextElementSibling.innerHTML);
+            // replace prompt with CSS popup window and logic for button clicks
+            let discard = prompt('Are you sure you would like to delete this from your saved decks? Once deleted you cannot get it back. Yes or No?');
+            let deckDeleted = {};
+            if (discard.toUpperCase() === 'YES') {
+                // delete deck that the X was clicked on
+                deckDeleted.id = e.target.id;
+                deckDeleted.name = e.target.nextElementSibling.innerHTML;
+                // send request to delete deck from db
+                const deleteResponse = await fetch('/delete', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }, 
+                    method: 'POST',
+                    body: JSON.stringify(deckDeleted)
+                })
+                // take the JSON in the response and store it
+                // ***probably want to do something different rather then use a message for displaying
+                const deleteJSON = await deleteResponse.status;
+                console.log(deleteJSON);
+                if(deleteJSON == 200) {
+                    console.log('deck deleted');
+                }else {
+                    console.log(`server error, deck either doesn't exist or was unable to be deleted`);
+                }
+            }else {
+                console.log('you do not wish to delete this deck');
+            }
+        })
+    })
+}
+
+searchBTN.addEventListener('click', async () => {
+    let userInput;
+    userInput = inputCheck();
+    console.log(searchParams);
+    if(userInput) {
+        returnedDecks = await searchDecks();
+        displayDecks();
+    }else {
+        console.log('you must provide either a class and/or a deck name to use the search function');
+    }
+})
+
+// make event listener for clicking 'X' on decks being displayed

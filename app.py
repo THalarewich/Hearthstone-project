@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask.wrappers import Response
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from authlib.integrations.flask_client import OAuth
@@ -54,13 +55,57 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# function only loads "profile.html" right now
 @app.route("/", methods=["GET", "POST"])
 @login_required
-def profile():
+def root():
+    if request.method == "POST":
+        pass
     battle_tag = dict(session).get("battletag", None)
     user_id = dict(session).get("username", None)
     #print(battle_tag, user_id)
+    # pass in PB times for match game
+    return render_template("profile.html")
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    # user sends post request to /profile
+    # check for correct user input
+    # query SQL db for decks
+    if request.method == "POST":
+        search_params = request.get_json()
+        print(search_params)
+        returned_decks = {"deckCount": 0}
+        SQLquery = None
+        # *** What if 'Any class' is selected???
+        if search_params["deckClass"] == None:
+            print('deckclass = none')
+            SQLquery = SQL('SELECT deck, id FROM decks WHERE deck_name = ? AND user_id = ?', 
+                (search_params["deckName"], session["user_id"]))
+        elif search_params["deckName"] == None:
+            print('deckname = none')
+            SQLquery = SQL('SELECT deck, id FROM decks WHERE class = ? AND user_id = ?', 
+                (search_params["deckClass"], session["user_id"]))
+        else:
+            print('last chance')
+            print(search_params["deckName"], search_params["deckClass"])
+            SQLquery = SQL('SELECT deck, id FROM decks WHERE class = ? AND deck_name = ? AND user_id = ?', 
+                (search_params["deckClass"], search_params["deckName"], session["user_id"]))
+        # convert tuple to list of lists
+        if  SQLquery != None:
+            i = 0
+            # create a dict that holds {deckID: deck} pairs
+            for deck in SQLquery:
+                returned_decks[str(SQLquery[i][1])] = json.loads(''.join(deck[0]))
+                returned_decks["deckCount"] += 1
+                i += 1
+        # ***deal with if any class is selected!
+        return jsonify(returned_decks)
+        # pass in PB times and decks to be displayed
+    battle_tag = dict(session).get("battletag", None)
+    user_id = dict(session).get("username", None)
+    #print(battle_tag, user_id)
+    # pass in PB times for match game
     return render_template("profile.html")
 
 # Handles checking user login credentials and login
@@ -142,6 +187,7 @@ def authorize():
 def deck_builder():
     if request.method == "POST":
         deck = request.get_json()
+        print(request)
         deck_list = []
         message = []
         
@@ -204,7 +250,7 @@ def deck_builder():
             message = {
                 "message" : "Your deck has been saved"
             }
-            SQL('INSERT INTO decks VALUES (?, ?, ?, ?)', 
+            SQL('INSERT INTO decks (user_id, deck_name, deck, class) VALUES (?, ?, ?, ?)', 
                 (session["user_id"], deck[0]["deck_name"], json.dumps(deck), deck[0]["deck_class"]))
         # ***return info to JS to display for user (whether the deck was saved or 
             # already exists(if so send the name of the saved deck to JS))
@@ -212,16 +258,82 @@ def deck_builder():
         return jsonify(message)
     return render_template("builder.html")
 
-@app.route("/match")
+@app.route("/match", methods=["GET", "POST"])
 def match():
+    if request.method == "POST":        
+
+# ****JS console error (uncaught error in promise) unexpected token < in JSON at pos 0
+#  the above error could be caused by the response object being sent back instead of JSON OR it could be sending 
+#   back the HTML template!!!!!!
+
+    #         if the code in app.py/match is changed from 
+    #      data = json.loads(request.data)
+    #          time = data.get("timePlayed", None)
+    #          if time is None:
+    #              return jsonify({"message":"time not found"})
+    #          else:
+    #         to: time = request.get_json()
+    # there is a bunch of errors that is flask not accepting what is being sent as real JSON
+        #  the following code is working
+        #     it sends the correct JSON from JS and sends the correct JSON back to JS
+        # do something with the data to check DB for top 3 times
+        # if the data time beats atleast one of the times, edit the DB table
+        # send a message back to JS to notify user
+        print(request)
+        data = json.loads(request.data)
+        time = data.get("timePlayed", None)
+        message = {"message": "","score": None, "outcome": None}
+        if time is None:
+            message["message"] = "time not found"
+            return jsonify(message)
+        else:
+            player_times = SQL("SELECT * FROM times WHERE user_id = ?", (session["user_id"],))
+            high_score = []
+            times = []
+            # figure out a better way to deal with messages to the user, ei different outcomes to different situations
+            #   (when the user has only played the game once before and has 9999 as the other 2 scores)
+            # if the user has played the game before
+            if player_times != []:
+                high_score = list(player_times[0])
+                high_score.pop(0)
+            # iterate through to create an individual duplicate list
+                for scores in high_score:
+                    times.append(scores)
+            # check for fastest completion time
+                i = 0
+                while i < len(times):
+                    if time < times[i]:
+                        times.insert(i, time)
+                        if len(times) == 3:
+                            times.pop()
+                        message["score"] = time
+                        message["outcome"] = "win"
+                        break
+                    i += 1
+                # if there is a new 3 top scores
+                if times != high_score:
+                    SQL("UPDATE times SET first = ?, second = ?, third = ? WHERE user_id = ?", 
+                        (times[0], times[1], times[2], session["user_id"]))
+                    message["message"] = "You beat one of your top 3 high scores!"
+                else:
+                    message["message"] = "Sorry, you were not able to beat one of your top 3 scoring times. Please try again!"
+                    message["score"] = [time, times[2]]
+                    message["outcome"] = "lose"
+            # if a user has never played the game before
+            else:
+                SQL("INSERT INTO times (user_id, first, second, third) VALUES (?, ?, 9999, 9999)", (session["user_id"], time))
+                message["message"] = "Your new high score"
+                message["score"] = time
+                message["outcome"] = "win"
+            return jsonify(message)
     return render_template("match.html")
 
 @app.route("/api_call/<card>", methods=["GET", "POST"])
 def api_card_call(card):
+    # ***NEED ERROR HANDLING FOR IF USER DID NOT LINK TO BATTLE.NET ACCOUNT***
     # SQL query for current user access token
     token = SQL("SELECT access_token FROM users WHERE id = ?", (session["user_id"],))
     response = ''
-    #   call only works on page load currently
     if request.method == "POST":
         # store search params from user 
         # use params to request certian data from api
@@ -278,5 +390,28 @@ def api_card_call(card):
             "https://us.api.blizzard.com/hearthstone/cardbacks?locale=en_US&pageSize=500&sort=dateAdded%3Adesc&order (deprecated)=desc&access_token="  + token[0][0])
         # save response text to convert to JSON
     json_cards = response.text
+    print(json_cards)
         # sends minion cards to JS file
     return jsonify(json_cards)
+
+@app.route("/delete", methods=["POST"])
+def delete():
+    deleted_deck = request.get_json()
+    print(deleted_deck)
+    print(deleted_deck["id"])
+    deck_exists = None
+    # perform a sql query to check that the deck that was selected exists
+    deck = SQL('SELECT COUNT(deck) FROM decks WHERE id = ? AND deck_name = ? AND user_id = ?', 
+        (deleted_deck["id"], deleted_deck["name"], session["user_id"]))
+    # check if deck exists
+    print(deck[0][0])
+    if deck[0][0] != 1:
+        # figure out better error handling
+        # return (500)
+        print('deck not deleted')
+    else:
+        SQL('DELETE FROM decks WHERE id = ? AND deck_name = ? AND user_id = ?', 
+        (deleted_deck["id"], deleted_deck["name"], session["user_id"]))
+        print('deck deleted')
+        
+    return ('OK', 200)

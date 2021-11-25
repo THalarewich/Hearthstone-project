@@ -1,8 +1,17 @@
 // card flipping game
 
+// TODO: 
+//      bug that deals with flipping the cards
+//          when you get a match if you flip another card all 3 will disapear and game cannot be completed
+//          if 2 are flipped over (not a match) and a 3rd is flipped as the first 2 are flipping back the 3rd will flip
+//              back by itself after the first 2 have flipped back
+
 // holds data from api calls
 let fullDeck = {};
 // 
+let start;
+const gameTime = {timePlayed: null};
+let discarded;
 let cardsFaceDown;
 // array for cards that are currently face up
 let cardsFaceUp = [];
@@ -78,6 +87,7 @@ function fillBoard(deck, cardBack){
     //              start a timer for how long the round will take
     //              save PBs for profile of website
     cardsFaceDown = document.getElementsByClassName('flip-card');
+    stopWatch('start')
     flipCards();
 }
 
@@ -91,6 +101,7 @@ function flipCards() {
             // if 2 cards are flipped already dont do anything
             if(cardsFaceUp.length <= 1){
                 // if correct div is selected add animation class
+                //      JS console error when the first flipped card is clicked again (mouse double click   )
                 while(found == false){
                     if(targetCard.className === 'flip-card-inner'){
                         targetCard.classList.add('selected-card');
@@ -122,7 +133,11 @@ function matchCards(){
                     card.classList.remove('selected-card');
                     cardsFaceUp.pop();
                 }
+                if(discarded.length == 20) {
+                    stopWatch('stop');
+                }
             }, 1500);
+            discarded = document.getElementsByClassName('discarded')
         } else{
             // clear cardsFaceUp array and remove .selected-card class from cards to turn them back over
             setTimeout(() => {
@@ -135,4 +150,44 @@ function matchCards(){
     }
 }
 
+function stopWatch(startStop) {
+    let stop;
+    // start the timer
+    if (startStop === 'start') {
+        start = Date.now();
+    // stop the timer
+    }else if (startStop === 'stop') {
+        stop = Date.now();
+        // play time in seconds
+        gameTime.timePlayed = (stop - start) / 1000;
+        timeInPlay();
+    }
+}
+async function timeInPlay(){
+    const timeResponse = await fetch('/match', {
+        headers: {
+            'Content-Type': 'application/json'
+        }, 
+        method: 'POST',
+        body: JSON.stringify(gameTime)
+    })
+// possibly trying to parse the response object itself <Response OK 200>
+
+        // if the code in app.py/match is changed from 
+        // data = json.loads(request.data)
+        //     time = data.get("timePlayed", None)
+        //     if time is None:
+        //         return jsonify({"message":"time not found"})
+        //     else:
+        // to: time = request.get_json()
+        // there is a bunch of errors that is flask not accepting what is being sent as real JSON
+    // take the JSON in the response and store it
+    const messageJSON = await timeResponse.json();
+    if (messageJSON.outcome == "win"){
+        console.log(`${messageJSON.message}, with a time of ${messageJSON.score}`)
+    }else if (messageJSON.outcome == "lose") {
+        console.log(`${messageJSON.message} The time to beat is ${messageJSON.score[1]}, your time was ${messageJSON.score[0]}`)
+    }
+    console.log(messageJSON.message);
+}
 shuffle.addEventListener('click', fillDeck);
