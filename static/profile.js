@@ -3,9 +3,6 @@
 // allow user to delete saved decks
 // carousel for displaying decks? (too ambitious?)
 
-//          PBs DISPLAY
-// is it easier to have flask embed the PB times into the html and modify if needed from JS
-// rather then sending request from JS to flask to send the data back to JS to be displayed
 
 //          USER SEARCH FUNCTION
 // collect user input on click event
@@ -23,10 +20,12 @@
 // prompt user asking if they are sure they want to delete deck (will be gone forever)
 // send request to flask to delete deck in SQL db
 
-const searchParams = {
-    deckClass: null,
-    deckName: null
-};
+
+//          BUGS
+// after deleting a deck, the page doesnt refresh and remove said deck from screen
+// radio button option "AnyClass" doesnt return any class
+
+let searchParams = {};
 let returnedDecks = [];
 
 const searchBTN = document.getElementById('search-decks');
@@ -35,6 +34,10 @@ const deckViewing = document.getElementById('returned-decks');
 
 // verify user input before making fetch request
 function inputCheck(){
+    searchParams = {
+        deckClass: null,
+        deckName: null
+    };
     // radio btns
     const deckClasses = document.getElementsByName('deck-class');
     // input search field
@@ -80,7 +83,7 @@ function displayDecks() {
         let displayDeck = '';
         for(const deckID in returnedDecks) {
             let cardNames = [];
-            // do not use property 'deckCount' for the following
+            // do not use property 'deckCount' for the following iterations
             if(returnedDecks[deckID] !== returnedDecks.deckCount) {
                 // collect card names from deck
                 for(let i = 1; i < returnedDecks[`${deckID}`].length; i++){
@@ -98,12 +101,12 @@ function displayDecks() {
                 // message on how many decks where returned and under what search criteria
                 let deckClass = '';
                 let deckName = '';
-                (searchParams.deckClass != null ? deckClass = ` for the class ${searchParams.deckClass}` : null);
-                (searchParams.deckName != null ? deckName = ` with the name ${searchParams.deckName}` : null);
-                // *** a way to add the 's' to deck if there is more then one
+                (searchParams.deckClass != null ? deckClass = ` for the class '${searchParams.deckClass}''` : null);
+                (searchParams.deckName != null ? deckName = ` with the name '${searchParams.deckName}'` : null);
                 let deckCount = `
                     <h3>
-                        Deck search${deckClass}${deckName} returned ${returnedDecks.deckCount} decks
+                        Deck search${deckClass}${deckName} returned ${returnedDecks.deckCount} 
+                        deck${(returnedDecks.deckCount > 1 ? 's' : '')}
                     </h3>`
                 printDecks.innerHTML = deckCount;
             }
@@ -113,7 +116,9 @@ function displayDecks() {
     }else {
         // clear previously returned decks from page
         deckViewing.innerHTML = '';
-        printDecks.innerHTML = '<h3>You do not have any decks saved that meet your search criteria</h3>';
+        printDecks.innerHTML = `<h3>You do not have any decks saved that meet your search criteria of
+            ${(searchParams.deckClass != null ? ` Class: '${searchParams.deckClass}'` : '')}
+            ${(searchParams.deckName != null ? ` Deck Name: '${searchParams.deckName}'`: '')} </h3>`;
     }
 }
 
@@ -144,9 +149,10 @@ function deckDelete() {
                 // take the JSON in the response and store it
                 // ***probably want to do something different rather then use a message for displaying
                 const deleteJSON = await deleteResponse.status;
-                console.log(deleteJSON);
+                console.log(deleteResponse);
                 if(deleteJSON == 200) {
                     console.log('deck deleted');
+                    userSearch();
                 }else {
                     console.log(`server error, deck either doesn't exist or was unable to be deleted`);
                 }
@@ -157,16 +163,15 @@ function deckDelete() {
     })
 }
 
-searchBTN.addEventListener('click', async () => {
+async function userSearch() {
     let userInput;
     userInput = inputCheck();
-    console.log(searchParams);
     if(userInput) {
         returnedDecks = await searchDecks();
         displayDecks();
     }else {
-        console.log('you must provide either a class and/or a deck name to use the search function');
+        console.log('You must provide either a class and/or a deck name to use the seach function');
     }
-})
+}
 
-// make event listener for clicking 'X' on decks being displayed
+searchBTN.addEventListener('click', userSearch);

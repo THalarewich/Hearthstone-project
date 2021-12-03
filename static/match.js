@@ -6,6 +6,8 @@
 //          if 2 are flipped over (not a match) and a 3rd is flipped as the first 2 are flipping back the 3rd will flip
 //              back by itself after the first 2 have flipped back
 
+//      display timer on screen???
+
 // holds data from api calls
 let fullDeck = {};
 // 
@@ -29,7 +31,12 @@ async function fetchCards() {
     ]);
     const face = await faceResponse.json();
     const back = await backResponse.json();
-    return [face, back];
+    // if access token expires
+    if (faceResponse.status != 200 || backResponse.status != 200) {
+        console.log(`error code ${faceResponse.status}${backResponse.status}`)
+    }else {
+        return [face, back];
+    }
 };
 
 // Make shuffle button show up on UI only after fullDeck is populated
@@ -114,8 +121,8 @@ function flipCards() {
                         targetCard = targetCard.parentNode;
                     }
                 }
+                matchCards();
             }
-            matchCards();
         })
     })
 }
@@ -127,7 +134,7 @@ function matchCards(){
             // you've made a match
             // remove selected-card class and make cards disapper from board
             setTimeout(() => {
-                for(let i = cardsFaceUp.length - 1; i >= 0; i--){
+                for(let i = 1; i >= 0; i--){
                     let card = cardsFaceUp[i].cardClicked;
                     card.classList.add('discarded');
                     card.classList.remove('selected-card');
@@ -136,12 +143,12 @@ function matchCards(){
                 if(discarded.length == 20) {
                     stopWatch('stop');
                 }
-            }, 1500);
+            }, 1000);
             discarded = document.getElementsByClassName('discarded')
         } else{
             // clear cardsFaceUp array and remove .selected-card class from cards to turn them back over
             setTimeout(() => {
-                for(let i = cardsFaceUp.length - 1; i >= 0; i--){
+                for(let i = 1; i >= 0; i--){
                     cardsFaceUp[i].cardClicked.classList.remove('selected-card');
                     cardsFaceUp.pop();
                 }

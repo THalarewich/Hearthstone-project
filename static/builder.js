@@ -18,7 +18,9 @@
 // implement 
 //      user clicks else where on page while a drop down menu is open
 //      In app.py check on a way to fix the hacky json conversion & a way to check if a deck was already saved in the DB
-//      ***Save PB time for solving the matching game
+
+// BUG!
+// when i made 1 deck then deleted all cards from it the card counter was stuck at 3 even after changing classes
 
 //      html class "selected-card" is in use by the match game, causing cards in deck in builder to appear mirrored
 
@@ -39,7 +41,11 @@ const currentSearch = {
     manaCost: null,
     minionType: null
 };
-
+// hold values for drop down menus
+const selectedMenu = {
+    menu: null,
+    showing: false
+}
 // filter selection divs
 const filterButtons = document.getElementById('filter-buttons');
 const classSelection = document.getElementById('pick-a-class');
@@ -66,11 +72,6 @@ const filterOptions = Array.from(document.getElementsByClassName('filter-selecti
 let searchResults;
 let returnedCards;
 let lastClickedCard;
-
-
-// TODO:
-    //   display the 'X' on the top right corner of card/ card counter on the bottom of the card
-    //  ^^^ done through CSS
 
 // when a 'X' on the card in the deck is clicked, remove one copy from deck
 function deckCards() {
@@ -191,11 +192,17 @@ async function apiSearch(filter = null) {
     // take the JSON in the response and store it
     // ***do i really need to use both .json() and JSON.parse()???
     // ^ if they are close to the same thing then why do i need both of them in this function
-    const searchJSON = await searchResponse.json();
-    console.log(searchJSON);
-    searchResults = JSON.parse(searchJSON);
-    console.log(searchResults);
-    displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
+
+    // if access token expires
+    if (searchResponse.status != 200) {
+        console.log(`error code ${searchResponse.status}, make sure to re-link to your battle.net account`);
+    }else {
+        const searchJSON = await searchResponse.json();
+        console.log(searchJSON);
+        searchResults = JSON.parse(searchJSON);
+        console.log(searchResults);
+        displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
+    }
 }
 
 // event for user selected search params
@@ -251,8 +258,6 @@ function selectedFilters(){
 // for class options to store users class choice for deck
 //      error handling (allow only one class to be choosen, hide class choices after class is chose)
 //      (allow a different class to be picked but alert user that any class specific cards will be lost)
-// *** Cards currently will not show up after class selection 
-// *** Multiple class cards will show up not only the selected class
 Array.from(deckClasses).forEach(klass => {
     klass.addEventListener('click', e => {
         // * need to implement *
@@ -273,34 +278,38 @@ Array.from(deckClasses).forEach(klass => {
 })
 
 // when a filter section is clicked, a dropdown menu for that section should appear
-// if you click else where on the screen OR select a filter option from the drop down menu it should disapear
-//          (seperate function?? ^^^^)
 filterCatagories.forEach(filter => {
     filter.addEventListener('click', e => {
+        // drop down divs
         const targetMenu = e.target.nextElementSibling;
         // verify that the event target sibling is a drop down menu
         if(targetMenu.classList.contains('drop-down')) {
-            const selectedMenu = {
-                menu: null,
-                showing: false
-            }
-            // check to see if any drop down menus are showing on the screen
-            dropDownArray.forEach(menu => {
-                if(menu.classList.contains('selected-filter')) {
-                    selectedMenu.menu = menu;
-                    selectedMenu.showing = true;
-                }
-            })
             // if there is a drop down showing
-            if(selectedMenu.showing === true) {
+            if(selectedMenu.showing) {
                 selectedMenu.menu.classList.remove('selected-filter');
+                selectedMenu.showing = false;
+                selectedMenu.menu = null;
             }
             // show event target menu if not already showing
             if(selectedMenu.menu !== targetMenu) {
                 targetMenu.classList.add('selected-filter');
+                selectedMenu.menu = targetMenu;
+                selectedMenu.showing = true;
             }
         }
     })
+})
+
+// if drop down menu is open and user clicks somewhere else in the browser
+document.body.addEventListener('click', e => {
+    console.log(selectedMenu);
+    if(filterCatagories.includes(e.target) == false){
+        if(selectedMenu.showing) {
+            selectedMenu.menu.classList.remove('selected-filter');
+            selectedMenu.menu = null;
+            selectedMenu.showing = false;
+        }
+    }
 })
 
 // add specific search params to currentSearch when clicked by user

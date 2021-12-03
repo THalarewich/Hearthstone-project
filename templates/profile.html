@@ -5,21 +5,18 @@ Profile
 {% endblock %}
 
 {% block main %}
+<!-- use CSS or JS to make this appear and disappear based on if the was a error (not signed into BN or token expired) -->
+<div class="error">{{ error }}</div>
 <div>
     <a href="/battlenet_login"><button>Sign into Your Battle.net Account</button></a>
 </div>
 <div>
     <!-- <h2>Profile: {{ battle_tag }}</h2> -->
     <div>
-        <!-- <h3>Match'em Up - Personal Best: {{ match_pb }}</h3> -->
+        <h3>Match'em Up - Personal Best: {{ match_pb }}</h3>
     </div>
     <div>
         <h3>Saved Hearthstone Decks</h3>
-        <!-- make search function 
-                    user input field and search(submit) button POST to / route-->
-        <!-- allow user to delete any decks from this page 
-                    add CSS buttons for user to click on for displaying a prompt to delete or make changes to the deck?-->
-        <!-- { loop through saved hearthstone decks for user display } -->
         <div>
             <input type="radio" class="deck-selection" id="demonhunter" name="deck-class" value="Demon Hunter">
             <label for="demonhunter">Demon Hunter</label>
