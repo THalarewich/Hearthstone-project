@@ -81,6 +81,7 @@ def profile():
     if match_PB == []:
         match_pb = "Head over to Match'em Up and test your memory skills!"
     else:
+        # cannot compare float and str
         match_pb = match_PB[0][0] + " seconds!"
     # user sends post request to /profile
     if request.method == "POST":
@@ -211,11 +212,24 @@ def deck_builder():
         if request.method == "POST":
             deck = request.get_json()
             deck_list = []
-            message = []
-            # look into another way of dealing with the data from request
-            # hacky work around got past the error (unable to bind parameter 1 - probably unsupported type)
-                # using request.get_json() to take the json from the request and parse it to a python list
-                # then using json.dumps() to the serialize that python list into json
+            message = {
+                "deck_name" : "",
+                "message" : "", 
+                "deck_found" : None,
+                "deck_saved" : None
+            }
+            # check if the "deck name" has already been used by current user
+            deck_names = SQL('SELECT deck_name, id FROM decks WHERE user_id = ?', (session["user_id"],))
+            for saved_deck in deck_names:
+                if saved_deck[0].upper() == deck[0]["deck_name"].upper():
+                    message = {
+                        "deck_name" : saved_deck[0], 
+                        "message" : "You have already saved a deck using the name ", 
+                        "deck_found" : False, 
+                        "deck_saved" : False
+                    }
+                    print("deck can't be saved with the same name")
+                    return jsonify(message)
 
             # use class of deck and user_id to narrow down what decks to check against
             saved_decks = SQL('SELECT deck FROM decks WHERE user_id = ? AND class = ?', 
@@ -225,6 +239,7 @@ def deck_builder():
                 deck_list.append(json.loads(''.join(single_deck)))
             i = 0
             deck_found = False
+
             # loop through lists to see if the same card make up is already in use
             while i < len(deck_list) and deck_found == False:
                 deck_search = {
@@ -245,7 +260,7 @@ def deck_builder():
                                 deck_list[i].pop(j)
                                 deck_list[i].insert(1, temp)
                                 deck_search["start_pos"] += 1
-                                # print("match", i, x, j)
+                                print("match", i, x, j)
                                 x += 1
                                 break
                         # if card "x" is not in deck_list[i] end the 2 inner loops to move to the next deck
@@ -260,7 +275,9 @@ def deck_builder():
                     deck_found = True
                     message = {
                         "deck_name" : deck_list[i][0]["deck_name"],
-                        "message" : "You have already saved a deck with those cards"
+                        "message" : "You have already saved a deck using those cards with the name ", 
+                        "deck_found" : True,
+                        "deck_saved" : False
                     }
                     print("deck found")
                 i += 1
@@ -269,8 +286,10 @@ def deck_builder():
                 # ***notify the user the deck has been saved
                 print("the deck has been saved!")
                 message = {
-                    "message" : "Your deck has been saved",
-                    "deck_name": deck[0]["deck_name"]
+                    "deck_name": deck[0]["deck_name"], 
+                    "message" : "Your deck has been saved with the name ", 
+                    "deck_found" : False, 
+                    "deck_saved" : True
                 }
                 SQL('INSERT INTO decks (user_id, deck_name, deck, class) VALUES (?, ?, ?, ?)', 
                     (session["user_id"], deck[0]["deck_name"], json.dumps(deck), deck[0]["deck_class"]))
@@ -307,9 +326,13 @@ def match():
             print(request)
             data = json.loads(request.data)
             time = data.get("timePlayed", None)
-            message = {"message": "","score": None, "outcome": None}
+            message = {
+                "message": "", 
+                "score": None, 
+                "outcome": None
+            }
             if time is None:
-                message["message"] = "time not found"
+                message["message"] = "HTTP request error"
                 return jsonify(message)
             else:
                 player_times = SQL("SELECT * FROM times WHERE user_id = ?", (session["user_id"],))

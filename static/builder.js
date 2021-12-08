@@ -29,11 +29,11 @@
 // currentDeck will hold values for:
 //      cards selected by user (and amount per card)
 //      amount of total cards (including doubles)
-const currentDeck = [{card_count: 0, deck_name: '', deck_class: ''}];
+let currentDeck = [{card_count: 0, deck_name: '', deck_class: '', class_id: null}];
 
 // hold values from the filter menus to pass to flask in order for api calls
 //      show current search params on screen for user to disable specific search params
-const currentSearch = {
+let currentSearch = {
     class: null,
     attack: null,
     health: null,
@@ -53,6 +53,8 @@ const classSelection = document.getElementById('pick-a-class');
 const currentFilters = document.getElementById('current-filters');
 // save button
 const saveDeck = document.getElementById('save-deck');
+// reset button
+const resetDeck = document.getElementById('reset');
 
 // search result div
 const resultsDiv = document.getElementById('search-results');
@@ -198,9 +200,7 @@ async function apiSearch(filter = null) {
         console.log(`error code ${searchResponse.status}, make sure to re-link to your battle.net account`);
     }else {
         const searchJSON = await searchResponse.json();
-        console.log(searchJSON);
         searchResults = JSON.parse(searchJSON);
-        console.log(searchResults);
         displayCards(searchResults.cards, 0, 'returned-card', resultsDiv);
     }
 }
@@ -213,45 +213,52 @@ function selectedFilters(){
         filter.addEventListener('click', e => {
             // *add a popup window telling user that removing class will remove all class specific cards from deck
             if(e.target.parentNode.classList[0] == 'selected-class'){
-                // let popUp = document.getElementById(popUpUserInput);
+                // popup
+                let popUp = prompt(`Are you sure you wish to remove the class ${e.target.innerHTML}? 
+                    Doing so will remove all class specific cards from your deck. Yes or No`);
                 // condition will be met when user agrees (need to implement)
-                if(true){
-                    // remove all class specific card from currentDeck obj
-                    // class id key and multi-class id key need to be checked
-                    // DH id 14
-                    // Druid id 2
-                    // Hunter id 3
-                    // Mage id 4
-                    // Pally id 5
-                    // Priest id 6
-                    // Rogue id 7
-                    // Shaman id 8
-                    // Warlock id 9
-                    // Warrior id 10
-                    for(let i = 1; i < currentDeck.length; i++){
-                        console.log(e.target.classList[1]);
-                        if (currentDeck[i].classId == e.target.classList[1] || 
-                            currentDeck[i].multiClassIds.includes(e.target.classList[1])) {
-                                currentDeck.splice(i, 1);
-                                currentDeck[0].card_count -= 1;
-                                i--;
-                        }
-                    }
-                    currentSearch.class = null;
-                    classSelection.classList.remove('hidden');            
-                    filterButtons.classList.add('hidden');
-                    displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+                if(popUp.toUpperCase() = 'YES'){
+                    removeClassCards();
                 }
-                // *remove all class specific cards from currentDeck obj
             }else {
                 currentSearch[`${e.target.classList[1]}`] = null;
+                apiSearch();
             }
             e.target.remove();
-            apiSearch();
         })
     })
 }
 
+function removeClassCards() {
+    // remove all class specific card from currentDeck obj
+    // class id key and multi-class id key need to be checked
+    // DH id 14
+    // Druid id 2
+    // Hunter id 3
+    // Mage id 4
+    // Pally id 5
+    // Priest id 6
+    // Rogue id 7
+    // Shaman id 8
+    // Warlock id 9
+    // Warrior id 10
+    for(let i = 1; i < currentDeck.length; i++){
+        if (currentDeck[i].classId == currentDeck[0].class_id || 
+            currentDeck[i].multiClassIds.includes(currentDeck[0].class_id)) {
+                currentDeck.splice(i, 1);
+                currentDeck[0].card_count -= 1;
+                i--;
+        }
+    }
+    // reset variables
+    currentSearch.class = null;
+    currentDeck[0].class_id = null;
+    // change CSS classes
+    classSelection.classList.remove('hidden');            
+    filterButtons.classList.add('hidden');
+    displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+    apiSearch();
+}
 
 //              Event Listeners for filter selections
 
@@ -262,15 +269,23 @@ Array.from(deckClasses).forEach(klass => {
     klass.addEventListener('click', e => {
         // * need to implement *
         if(currentSearch.class !== null) {
+            // **** dont think i need this if statement as the message/popup is handled in a different func
             // alert user they will lose all class related cards, ask if they want to continue to change class
             console.log('changing classes will remove all current class specific cards from your deck');
         }else {
+            // save search param
             currentSearch.class = e.target.innerHTML;
+            // save class id
+            currentDeck[0].class_id = e.target.classList[1];
+            // change CSS classes
             classSelection.classList.add('hidden');            
             filterButtons.classList.remove('hidden');
+            // add on screen filter btn
             currentFilters.firstElementChild.innerHTML = `
-                <button class="selected-filter-button ${e.target.classList[1]}">${e.target.innerHTML}</button>`;
+                <button class="selected-filter-button">${e.target.innerHTML}</button>`;
+            // add event listener to btn
             selectedFilters();
+            // search api with new param
             apiSearch();
         }
         
@@ -302,7 +317,6 @@ filterCatagories.forEach(filter => {
 
 // if drop down menu is open and user clicks somewhere else in the browser
 document.body.addEventListener('click', e => {
-    console.log(selectedMenu);
     if(filterCatagories.includes(e.target) == false){
         if(selectedMenu.showing) {
             selectedMenu.menu.classList.remove('selected-filter');
@@ -356,9 +370,56 @@ saveDeck.addEventListener('click', async () => {
             body: JSON.stringify(currentDeck)
         })
          // take the JSON in the response and store it
-        const messageJSON = await deckResponse.json();
-        // notify user of deck name if a deck with the same cards alreay exists
-        // notify if the deck was saved
-        console.log(messageJSON.deck_name, messageJSON.message);
+        const saveInfo = await deckResponse.json();
+        let message = `${saveInfo.message}'${saveInfo.deck_name}'`;
+        // deck was saved
+        if(saveInfo.deck_saved) {
+            // popup
+            console.log(message);
+        // card makeup was found else where
+        }else if(saveInfo.deck_found) {
+            // popup
+            console.log(message);
+        // deck name already in use
+        }else if(!saveInfo.deck_saved && !saveInfo.deck_found) {
+            // popup
+            console.log(message);
+        }else {
+            console.log("server error???");
+        }
     }
 })
+
+// reset all filters and remove all cards from deck
+resetDeck.addEventListener('click', () => {
+    // offer buttons in the popup asking if they wish to reset the filters the deck or both
+    // popup
+    let userPrompt = prompt('Are you sure you wish to reset all filters and your deck? Filters, Deck or Both');
+    if(userPrompt.toUpperCase() === 'FILTERS' || userPrompt.toUpperCase() === 'BOTH') {
+        // remove filter btns from screen
+        Array.from(document.getElementsByClassName('selected-filter-button')).forEach(btn => {
+            btn.remove();
+        });
+        currentSearch = {
+            class: null,
+            attack: null,
+            health: null,
+            cardType: null,
+            manaCost: null,
+            minionType: null
+        };
+        // change CSS variables
+        classSelection.classList.remove('hidden');            
+        filterButtons.classList.add('hidden');
+        removeClassCards();
+    }
+    if(userPrompt.toUpperCase() === 'DECK' || userPrompt.toUpperCase() === 'BOTH') {
+        currentDeck = [{
+            card_count: 0, 
+            deck_name: '', 
+            deck_class: ''
+        }];
+        // display new empty deck
+        displayCards(currentDeck, 1, 'selected-card', currentDeckDiv);
+    }
+});

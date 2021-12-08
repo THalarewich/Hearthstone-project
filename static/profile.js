@@ -129,9 +129,8 @@ function deckDelete() {
             // find the deck the user selected
             // save ID and name in a var
             // send ID and name to flask
-            console.log(e.target.id);
-            console.log(e.target.nextElementSibling.innerHTML);
             // replace prompt with CSS popup window and logic for button clicks
+            // popup
             let discard = prompt('Are you sure you would like to delete this from your saved decks? Once deleted you cannot get it back. Yes or No?');
             let deckDeleted = {};
             if (discard.toUpperCase() === 'YES') {
@@ -149,8 +148,8 @@ function deckDelete() {
                 // take the JSON in the response and store it
                 // ***probably want to do something different rather then use a message for displaying
                 const deleteJSON = await deleteResponse.status;
-                console.log(deleteResponse);
                 if(deleteJSON == 200) {
+                    // popup
                     console.log('deck deleted');
                     userSearch();
                 }else {

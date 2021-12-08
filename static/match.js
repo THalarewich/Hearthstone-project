@@ -111,7 +111,7 @@ function flipCards() {
                 //      JS console error when the first flipped card is clicked again (mouse double click   )
                 while(found == false){
                     if(targetCard.className === 'flip-card-inner'){
-                        targetCard.classList.add('selected-card');
+                        targetCard.classList.add('card-selected');
                         cardsFaceUp.push({
                             cardClicked: targetCard,
                             cardImage: targetCard.firstElementChild.firstElementChild.src
@@ -137,7 +137,7 @@ function matchCards(){
                 for(let i = 1; i >= 0; i--){
                     let card = cardsFaceUp[i].cardClicked;
                     card.classList.add('discarded');
-                    card.classList.remove('selected-card');
+                    card.classList.remove('card-selected');
                     cardsFaceUp.pop();
                 }
                 if(discarded.length == 20) {
@@ -149,7 +149,7 @@ function matchCards(){
             // clear cardsFaceUp array and remove .selected-card class from cards to turn them back over
             setTimeout(() => {
                 for(let i = 1; i >= 0; i--){
-                    cardsFaceUp[i].cardClicked.classList.remove('selected-card');
+                    cardsFaceUp[i].cardClicked.classList.remove('card-selected');
                     cardsFaceUp.pop();
                 }
             }, 1500);

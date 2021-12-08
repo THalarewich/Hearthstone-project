@@ -89,7 +89,7 @@ div.row .card-row{
 }
   
   /* Do an horizontal flip when you move the mouse over the flip box container */
-.selected-card {
+.card-selected {
     transform: rotateY(180deg);
 }
 
