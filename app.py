@@ -81,8 +81,7 @@ def profile():
     if match_PB == []:
         match_pb = "Head over to Match'em Up and test your memory skills!"
     else:
-        # cannot compare float and str
-        match_pb = match_PB[0][0] + " seconds!"
+        match_pb = str(match_PB[0][0]) + " seconds!"
     # user sends post request to /profile
     if request.method == "POST":
         search_params = request.get_json()
@@ -473,7 +472,8 @@ def check_expiry(func):
     token_expiry = SQL('SELECT expires_in FROM users WHERE id = ?', (session["user_id"],))
     current_time = datetime.datetime.timestamp(datetime.datetime.utcnow())
     error = "Please sign-in with your battle.net account to use '" + func + "'"
-    if (current_time + 60) > token_expiry[0][0] or token_expiry == []:
+    # did user sign/link their battle.net account
+    if token_expiry[0][0] == None or (current_time + 60) > token_expiry[0][0]:
         print(error)
         session["error"] = error
         return False

@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/styles.css">
+    <!-- <link rel="stylesheet" href="../static/styles.css"> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../static/realstyles.css">
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
-    <nav>
-        <a href="/"><img src="../static/images/Hearthstone_logo.jpg" alt="Hearthstone logo title"></a>
+    <header>
+        <a href="/" class="logo"><img src="../static/images/Hearthstone_logo.jpg" alt="Hearthstone title" class="logo"></a>
         {% block nav %}{% endblock %}
-    </nav>
-    <header>Inn Keepers Daughter</header>
+    </header>
     <main>{% block main %}{% endblock %}</main>
     {% block scripts %}{% endblock %}
 </body>

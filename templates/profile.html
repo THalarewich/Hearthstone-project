@@ -6,16 +6,11 @@ Profile
 
 {% block main %}
 <!-- use CSS or JS to make this appear and disappear based on if the was a error (not signed into BN or token expired) -->
-<div class="error">{{ error }}</div>
-<div>
-    <a href="/battlenet_login"><button>Sign into Your Battle.net Account</button></a>
-</div>
-<div>
-    <!-- <h2>Profile: {{ battle_tag }}</h2> -->
-    <div>
-        <h3>Match'em Up - Personal Best: {{ match_pb }}</h3>
-    </div>
-    <div>
+<div class="profile-content">
+    <div class="error">{{ error }}</div>
+    <div class="battle-net-login"><a href="/battlenet_login">Sign into Your Battle.net Account</a></div>
+    <h3 class="match-em-pb">Match'em Up - Personal Best: {{ match_pb }}</h3>
+    <div class="deck-search">
         <h3>Saved Hearthstone Decks</h3>
         <div>
             <input type="radio" class="deck-selection" id="demonhunter" name="deck-class" value="Demon Hunter">
@@ -48,11 +43,9 @@ Profile
         <div>
             <button class="btn btn-primary" id="search-decks">Search</button>
         </div>
-        <div class="wrapper">
-            <div id="deck-count"></div>
-            <div id="returned-decks">
+        <div id="deck-count"></div>
+        <div id="returned-decks">
 
-            </div>
         </div>
     </div>
 </div>

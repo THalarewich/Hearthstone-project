@@ -1,0 +1,387 @@
+:root {
+    --a-link-color: #2b92ff;
+    --header-color: #011e38;
+    --parchment-color: rgb(138, 79, 24);
+    /* hearthstone icon color pallete */
+    --dark-brown: #332c13;
+    --brown: #694a25;
+    --dark-tan: #856837;
+    --oragne-tan: #986e2f;
+    --tan: #9e8852;
+    --beige: #b0ad75;
+    --yellowish-gold: #dec66f;
+    --off-white: #eaeeea;
+    --baby-blue: #65a6d0;
+    --medium-blue: #505a7b;
+    --dark-blue: #283142;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #033280;
+    margin: 0;
+}
+
+main {
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+ul {
+    list-style: none;
+}
+
+ul, li {
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    background-color: var(--header-color);
+    text-align: center;
+    position: sticky;
+    margin-bottom: 3em;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+.logo {
+    width: 50%;
+    max-width: 16.875em;
+}
+
+/* Typography */
+body {
+    font-family: 'Cinzel', serif;
+}
+
+a {
+    font-weight: bold;
+    text-decoration: none;
+    color: var(--baby-blue);
+}
+
+nav a:visited {
+    color: var(--baby-blue);
+}
+
+a:visited {
+    color: var(--dark-brown);
+}
+
+/* nav styles */
+.nav-toggle {
+    /* change to just live off screen */
+    display: none;
+}
+
+.nav-toggle-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-left: 1em;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.nav-toggle-label span, 
+.nav-toggle-label span::before, 
+.nav-toggle-label span::after {
+    display: block;
+    background: white;
+    height: 2px;
+    width: 2em;
+    border-radius: 2px;
+}
+
+.nav-toggle-label span::before, 
+.nav-toggle-label span::after {
+    content: '';
+    position: absolute;
+}
+
+/* top and bottom positioning is relative to the container or height of the nav-toggle-label */
+.nav-toggle-label span::before {
+    top: 7px;
+}
+
+.nav-toggle-label span::after {
+    bottom: 7px;
+}
+
+nav {
+    position: absolute;
+    text-align: left;
+    width: 100%;
+    top: 100%;
+    left: 0;
+    background: var(--header-color);
+    transform: scale(1, 0);
+    transform-origin: top;
+    transition: transform 400ms ease-in-out;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    margin-bottom: 1em;
+    margin-left: 1em;
+}
+
+nav a {
+    color:rgb(212, 212, 212);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 150ms ease-in-out;
+}
+
+nav a:hover{
+    color: var(--a-link-color);
+}
+
+.nav-toggle:checked ~ nav {
+    transform: scale(1, 1);
+}
+
+.nav-toggle:checked ~ nav a {
+    opacity: 1;
+    transition: opacity 250ms ease-in-out 250ms;
+}
+
+
+/* ***********
+    Profile styles
+************** */
+
+/* GRID ONLY WORKS WITH DIRECT CHILDREN NOT NESTED DIVS */
+/* so far all of these profile styles will *need to be* added to the media query for large screens */
+.profile-content {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2em;
+}
+
+.error {
+    grid-column: 2 / 6;
+    padding: 2em;
+    border-radius: 5px;
+    background-color: var(--yellowish-gold);
+    text-align: center;
+}
+
+.battle-net-login {
+    grid-column: 5 / 7;
+    border: 3px solid var(--dark-tan);
+    border-radius: 20px;
+    background-color: var(--yellowish-gold);
+    text-align: center;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.battle-net-login a {
+    color: black;
+}
+.battle-net-login:hover {
+
+}
+
+.match-em-pb {
+    grid-column: 4 / 7;
+}
+
+.deck-search {
+    grid-column: 1 / 7;
+}
+
+/* deck search card carousel */
+/* grid template with 13 columns */
+/* center card will take up 3 columns */
+/* side cards will be in 2 columns while overlapping the cards beside them */
+/*  card layout will be 4 .... 1 ..... 4 */
+/* use JS to cycle through cards that are not currently shown */
+/* use css transform/transisions to make cards look like they are sliding */
+/* will need transitions on both class (one that gets added to card/one that gets removed from card */
+.deck-cards {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+}
+.deck-card {
+    width: 100%;
+    grid-row: 1 / 2;
+    align-self: center;
+}
+.one-three {
+    grid-column: 1 / 3;
+}
+.three-five {
+    grid-column: 3 / 5;
+}
+.two-four {
+    grid-column: 2 / 4
+}
+.highlight-card {
+    grid-column: 6 / 9;
+}
+
+/* ***********
+    Builder styles
+************** */
+
+/* .hidden class needs to be changed to display: none
+        but the JS needs to be changed in order for it to work properly */
+
+/* have main content display of flex, have card search results/current deck side X side on destop
+        have current deck below search results on mobile and make current deck an expandable tab */
+.filter-buttons{
+    /* display: none; */
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+}
+.filter-btn {
+
+}
+.hidden{
+    /* visibility: hidden; */
+    display: none;
+}
+.deck-class:hover{
+    color: white;
+    cursor: pointer;
+}
+/* make a display: none and make the drop down menu overlap the background instead of pushing other elements out
+of the way for the menu to appear */
+.drop-down{
+    /* visibility: hidden; */
+    display: none;
+    background: rgb(94,69,14);
+    background: linear-gradient(0deg, rgba(94,69,14,1) 0%, rgba(191,168,63,1) 100%);
+    padding: .50em;
+    border-radius: .25em;
+}
+.filter-selection:hover{
+    cursor: pointer;
+    color: white;
+    background-color: black;
+}
+/* class that is added and removed to have only one filter catagory drop down showing at a time */
+            /* will end up needing to be changed to display: block (probably) */
+.selected-filter{
+    /* visibility: visible; */
+    display: block;
+    background: var(--parchment-color);
+    position: absolute;
+}
+.filter-type {
+    position: relative;
+}
+.drop-down ul {
+    display: grid;
+    grid-template-columns: 1;
+    gap: .25em;
+    padding: .5em;
+    background-color: rgb(221, 205, 170);
+    border: 3px solid var(--dark-brown);
+    border-radius: .2em;
+    /* background: rgb(94,69,14);
+    background: linear-gradient(0deg, rgba(94,69,14,1) 0%, rgba(191,168,63,1) 100%); */
+}
+
+/* card results section */
+
+/* wrapper div for cards generated in JS */
+/* change to display: grid and change card sizing for different vh */
+.wrapper{
+    display: flex;
+    flex-wrap: wrap;
+}
+/* display could be changed to grid and at different break points search/deck would take up partial rows 
+        and then would take up full rows on mobile */
+        /* would using transform: scale() work to expand the deck??? */
+        /* would both areas be able to be scrolled through individually??? */
+.main-content{
+    display: flex;
+    flex-direction: row-reverse;
+}
+/* size will change with media query */
+#current-deck{
+    width:30%;
+    height: 70vh;
+    border: 2px solid red;
+}
+#search-results{
+    width:70%;
+    height: auto;
+    border: 2px solid black;
+}
+
+/* desktop styles */
+@media (min-width: 800px) {
+    
+    main {
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+
+    .nav-toggle-label {
+        display: none;
+    }
+    
+    header {
+        display: grid;
+        grid-template-columns: .5fr 1fr .5fr minmax(500px, 1fr) .5fr;
+    }
+
+    .logo {
+        /* can't get logo to go into any other column then the first one */
+        grid-column: 2 / 3;
+        width: 100%;
+        min-width: 16.875em;
+    }
+
+    nav {
+        /* does not work on all browsers */
+        all: unset;
+        grid-column: 4 / 5;
+    }
+
+    nav a {
+        opacity: 1;
+        font-size: 1.1rem;
+        position: relative;
+    }
+
+    nav ul {
+        display: flex;
+        height: 100%;
+        align-items: flex-end;
+    }
+
+    nav a::before {
+        content: '';
+        display: block;
+        height: 5px;
+        background: var(--a-link-color);
+        position: absolute;
+        top: -1em;
+        right: 0;
+        left: 0;
+        transform: scale(0, 1);
+        transform-origin: left;
+        transition: transform ease-in-out 250ms
+    }
+
+    nav a:hover::before {
+        transform: scale(1, 1);
+        transform-origin: right;
+    }
+}

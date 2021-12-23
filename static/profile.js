@@ -83,11 +83,15 @@ function displayDecks() {
         let displayDeck = '';
         for(const deckID in returnedDecks) {
             let cardNames = [];
+            let cardImages = ''
             // do not use property 'deckCount' for the following iterations
             if(returnedDecks[deckID] !== returnedDecks.deckCount) {
                 // collect card names from deck
                 for(let i = 1; i < returnedDecks[`${deckID}`].length; i++){
-                    cardNames.push(returnedDecks[`${deckID}`][i].name);
+                    // change name to image
+                    cardNames.push(returnedDecks[`${deckID}`][i].image);
+                    cardImages += `
+                        <img class="deck-card" src="${returnedDecks[`${deckID}`][i].image}" alt="${returnedDecks[`${deckID}`][i].name}">`
                 }
                 // this will be changed when implementing CSS styles to have each deck be a carousel
                 displayDeck += `
@@ -95,7 +99,9 @@ function displayDecks() {
                         <span class="delete" id="${deckID}">X</span>
                         <h3>${returnedDecks[`${deckID}`][0].deck_name}</h3>
                         <h4>${returnedDecks[`${deckID}`][0].deck_class}</h4>
-                        <p>${cardNames}</p>
+                        <div class="deck-cards">
+                            ${cardImages}
+                        </div>
                     </div>`;
             }else {
                 // message on how many decks where returned and under what search criteria

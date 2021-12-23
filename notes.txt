@@ -1,0 +1,79 @@
+web app bugs/ todos
+
+USER INPUT FIELDS
+General:
+    - allow user to click the submit buttons as well use the 'enter' key
+    - had one instance where new terms of service needed to be agreed to for BN and then after agreeing the redirect
+        url did not work
+    - maybe make a guest account with a guest Battle.net account for everything to be tested out.
+
+IN APP.PY 
+requirments.txt
+- may need to remake file? not sure if more reqirements have been added?
+General
+    * when someone clicks on nav links before signing in, it will bring them to that page without signin 
+    then proceed to have JS errors (Probably best to just disable the links from anypage where someone wouldn't be 
+        signed in)
+    (need to make it impossible for user to visit those pages before signin)
+    * need some error handling in place to get user to link battle.net account before using either the 
+    builder or match game
+/profile
+    * what if user has never played match game, what will be displayed for match PB on profile page
+    * if 'Any Class' is selected by the radio buttons make sure sql will return decks of any class not nothing
+    * matchPB cannot compare float and str (saved a float in the match.js instead of a str)
+/match
+    - had strange issue with serializing and parsing JSON had to do a funky work around to make it work
+/api_call
+    * need error handling if user did not link battle.net account yet
+/delete
+    * need some error handling for if the deck selected does not exist
+    * need to do something with the response code in JS to notify user (timed popup from CSS)
+/builder
+    * check if deck name was already used by user
+/api_search
+    - check_expiry
+
+IN MATCH.JS
+    * when you match 2 cards and click on a 3rd while the first two are still on the screen, the 3rd card will 
+    disappear with the 2 matched cards, making it impossible to complete the game
+    * if 2 cards are flipped and don't match then a 3rd is flipped while the first two are still showing then all 
+    3 will flip back face down
+    * fixed issue above but it caused a new issue, if you click on a third as soon as you can after the first 2 flip 
+    face down, then the 3rd will flip facedown when you click on a 4th too quickly
+    - error handling for fetch request incase there is an issue with the server returning the cards
+    (not sure if this is needed as the shuffle button won't show up unless the deck is filled)
+
+IN PROFILE.JS
+    * after deleting a deck make the page refresh the returned decks on displayed
+    * radio button 'Any Class' doesnt return anything atm
+    - grab error element and if empty (do something to make the layout not awkward)
+
+IN BUILDER.JS
+    - ***when i made 1 deck, saved it, deleted all cards from said deck, the card counter was at 3 cards still even 
+    though all cards were removed (cannot recreate problem)
+    * if user clicks else where on the page while a drop down menu is open, make menu disappear
+    if menu is down and user clicks to remove class then the menu stays open while all dropdown menu buttons disappear
+    * html class "selected-card" is in use by the match game, causing cards in deck in builder to appear mirrored
+    * In function selectedFilters() need to implement a popup window if the user clicks to remove the selected class
+    notifying user that removing the class will remove all class specific cards and asks if they want to continue
+    * some way to notify user that deck was saved
+            (use message sent from flask to display a timed popup to let user know the deck was saved)
+    * add button to clear the current choosen cards in current deck
+
+    - In function apiSearch() i needed to use both .json() and JSON.parse() in order to convert json to a JS object
+    but in every other fetch request in this app i had to only use .json() otherwise errors would arise??? why???
+
+    - BUG after changing some of the CSS in line 220 in builder.js popUp prompt no longer removes the class when 
+        you type yes into the command prompt
+            you get error "Invalid left-hand side in assignment"
+    - drop down menus for filters are off to the right side slightly
+CSS TODO NOTES
+    - Watch videos on decktop vs mobile layout and make a cheat sheet on steps to lay everything out!!!!
+    - Majority of console.log()/(commented 'popup') messages need to be converted to popup windows or messages for 
+            user to select
+    - 'X' on cards and decks will need to be turned into a button on the item to reference it being possible 
+    to delete said item
+    - ALL THE STYLES!
+    - carousels for deck displays or another option?
+    - how should match cards be layed out?
+    - 

@@ -1,13 +1,17 @@
 {% extends "layoutroot.html" %}
 {% block nav %}
-<div>
+<input type="checkbox" id="nav-toggle" class="nav-toggle">
+<nav>
     <ul class="nav-links">
         <li><a class="nav-link" href="/profile">Profile</a></li>
         <li><a class="nav-link" href="/builder">Deck Builder</a></li>
         <li><a class="nav-link" href="/match">Match'em up</a></li>
         <li><a class="nav-link" href="/login">Logout</a></li>
     </ul>
-</div>
+</nav>
+<label for="nav-toggle" class="nav-toggle-label">
+    <span></span>
+</label>
 {% endblock %}
 {% block main %}{% endblock %}
 {% block scripts %}{% endblock %}
