@@ -212,8 +212,39 @@ nav a:hover{
 /* use css transform/transisions to make cards look like they are sliding */
 /* will need transitions on both class (one that gets added to card/one that gets removed from card */
 .deck-cards {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(13, 1fr);
+}
+.deck-cards::before, 
+.deck-cards::after {
+    position: absolute;
+    content: '';
+    width: 2.5em;
+    height: 2.5em;
+    align-self: center;
+    border-top: 5px solid white;
+    border-left: 5px solid white;
+    border-radius: 25%;
+}
+/* hover is on the parent element not the before or after elements */
+/* need to use a span or similar to use hover on the individual element */
+/* if a span ele is used it will be easier to target the specific deck for the click event */
+.deck-cards:hover::before {
+    transform: scale(125%) rotate(-45deg);
+    cursor: pointer;
+}
+.deck-cards:hover::after {
+    transform: scale(125%) rotate(135deg);
+    cursor: pointer;
+}
+.deck-cards::before {
+    left: -5em;
+    transform: rotate(-45deg);
+}
+.deck-cards::after {
+    right: -5em;
+    transform: rotate(135deg);
 }
 .deck-card {
     width: 100%;
@@ -223,20 +254,37 @@ nav a:hover{
 .one-three {
     grid-column: 1 / 3;
 }
+.two-four {
+    grid-column: 2 / 4
+}
 .three-five {
     grid-column: 3 / 5;
 }
-.two-four {
-    grid-column: 2 / 4
+.four-six {
+    grid-column: 4 / 6;
 }
 .highlight-card {
     grid-column: 6 / 9;
 }
+.nine-eleven {
+    grid-column: 9 / 11;
+}
+.ten-twelve {
+    grid-column: 10 / 12;
+}
+.eleven-thirteen {
+    grid-column: 11 / 13;
+}
+.twelve-fourteen {
+    grid-column: 12 / 14;
+}
 
 /* ***********
     Builder styles
-************** */
-
+    ************** */
+    
+    /* need to swap to mobile first then larger screen sizes in media query */
+    
 /* .hidden class needs to be changed to display: none
         but the JS needs to be changed in order for it to work properly */
 
@@ -323,6 +371,82 @@ of the way for the menu to appear */
     height: auto;
     border: 2px solid black;
 }
+
+
+/* ***********
+    Match styles
+************** */
+
+/* section needs to be gone through peice by peice!!!!!! */
+/* need a solution to spanning more columns for different screen sizes/flip-card height: */
+
+/* need to change section to mobile first and enable layout changes for larger screen sizes */
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    margin: auto;
+}
+.flip-card {
+    grid-column: span 1;
+}
+
+/* sizes the card image to respond to container size */
+.flip-card-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.flip-card, 
+.flip-card-inner, 
+.flip-card-front, 
+.flip-card-back {
+    width: 100%;
+    height: 100%
+}
+
+
+/* needs a fixed height otherwise with card img position: absolute collapses grid */
+.flip-card {
+    background-color: transparent;
+    height: 8em;
+    perspective: 1000px; 
+}
+  /* This container is needed to position the front and back side */
+.flip-card-inner {
+    display: flex;
+    align-items: center;
+    position: relative;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+  
+  /* Do an horizontal flip when you move the mouse over the flip box container */
+.card-selected {
+    transform: rotateY(180deg);
+}
+/* once cards are matched */
+.discarded {
+    visibility: hidden;
+}
+
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+  
+  /* Style the front side (fallback if image is missing) */
+.flip-card-back {
+    color: black;
+}
+  
+  /* Style the back side */
+.flip-card-front {
+    transform: rotateY(180deg);
+}
+
 
 /* desktop styles */
 @media (min-width: 800px) {

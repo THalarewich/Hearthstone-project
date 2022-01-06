@@ -28,6 +28,12 @@
 let searchParams = {};
 let returnedDecks = [];
 
+// popup error message for BN login link
+const err = document.querySelector('.error');
+if (err.innerHTML == '') {
+    err.style.display = 'none';
+}
+
 const searchBTN = document.getElementById('search-decks');
 // html ele for inserting returned decks
 const deckViewing = document.getElementById('returned-decks');

@@ -7,7 +7,10 @@
 {% block main %}
 <button id='test-button'>Shuffle Cards</button>
 <!-- game-board needs to be a flex container as well as each row -->
-<div id='game-board'>
+<div class="game-board">
+    
+</div>
+<!-- <div id='game-board'>
     <div class='row'>
         <ul class='card-row first-row'>
             <li class='col 1'></li>
@@ -44,7 +47,7 @@
             <li class='col 5'></li>
         </ul>
     </div>
-</div>
+</div> -->
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename = 'match.js') }}"></script>

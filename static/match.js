@@ -19,8 +19,8 @@ let cardsFaceDown;
 let cardsFaceUp = [];
 // html button for new game
 const shuffle = document.getElementById('test-button');
-// html collection of li elements as game board spaces
-const gameSpaces = document.getElementsByClassName('col');
+// // html collection of li elements as game board spaces
+// const gameSpaces = document.getElementsByClassName('col');
 
 // fetch api call to flask for hearthstone cards and info
 // error handling?? try, catch?
@@ -49,6 +49,7 @@ fetchCards().then(([face, back]) => {
     };
 });
 
+
 // randomly select a card back from the api
 // populate array with random 10 cards and create doubles
 // shuffle deck so doubles are not side x side
@@ -74,29 +75,52 @@ function fillDeck(){
     fillBoard(cardsInPlay, cardBack);
 }
 
-// insert card imgs into html game board
-function fillBoard(deck, cardBack){
-    for(let i = 0; i < gameSpaces.length; i++){
-        // insert html structure and card images for game/flipping animation
-        let flippingCard = 
-            `<div class="flip-card">
-                <div class="flip-card-inner">
-                    <div class="flip-card-front">
-                        <img src=${deck[i].image} alt='Hearthstone card face #${i}'>
-                    </div>
-                    <div class="flip-card-back">
-                        <img src=${cardBack.image} alt='Hearthstone card back'>
-                    </div>
+const gameBoard = document.getElementsByClassName('game-board')[0];
+
+function fillBoard(deck, cardBack) {
+    let gameSpaces = ''
+    for(let i = 0; i < deck.length; i++) {
+        gameSpaces += 
+        `<div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <img class="flip-card-image" src=${deck[i].image} alt='Hearthstone card face #${i}'>
                 </div>
-            </div>`;
-        gameSpaces[i].innerHTML = flippingCard;
+                <div class="flip-card-back">
+                    <img class="flip-card-image" src=${cardBack.image} alt='Hearthstone card back'>
+                </div>
+            </div>
+        </div>`;
     }
-    //              start a timer for how long the round will take
-    //              save PBs for profile of website
+    gameBoard.innerHTML = gameSpaces;
     cardsFaceDown = document.getElementsByClassName('flip-card');
     stopWatch('start')
     flipCards();
 }
+
+// // insert card imgs into html game board
+// function fillBoard(deck, cardBack){
+//     for(let i = 0; i < gameSpaces.length; i++){
+//         // insert html structure and card images for game/flipping animation
+//         let flippingCard = 
+//             `<div class="flip-card">
+//                 <div class="flip-card-inner">
+//                     <div class="flip-card-front">
+//                         <img src=${deck[i].image} alt='Hearthstone card face #${i}'>
+//                     </div>
+//                     <div class="flip-card-back">
+//                         <img src=${cardBack.image} alt='Hearthstone card back'>
+//                     </div>
+//                 </div>
+//             </div>`;
+//         gameSpaces[i].innerHTML = flippingCard;
+//     }
+//     //              start a timer for how long the round will take
+//     //              save PBs for profile of website
+//     cardsFaceDown = document.getElementsByClassName('flip-card');
+//     stopWatch('start')
+//     flipCards();
+// }
 
 // click event listener to each card 
 // error handling for any element ancestor of flip-card-inner??
