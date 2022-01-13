@@ -28,6 +28,20 @@
 let searchParams = {};
 let returnedDecks = [];
 
+// what to do for different screen sizes???
+const displayClasses = [
+    "one-three", 
+    "two-four", 
+    "three-five", 
+    "four-six",
+    "highlight-card", 
+    "nine-eleven", 
+    "ten-twelve", 
+    "eleven-thirteen", 
+    "twelve-fourteen", 
+    "hide-card"
+]
+
 // popup error message for BN login link
 const err = document.querySelector('.error');
 if (err.innerHTML == '') {
@@ -92,21 +106,29 @@ function displayDecks() {
             let cardImages = ''
             // do not use property 'deckCount' for the following iterations
             if(returnedDecks[deckID] !== returnedDecks.deckCount) {
-                // collect card names from deck
+                // collect card names/images from individual decks
                 for(let i = 1; i < returnedDecks[`${deckID}`].length; i++){
                     // change name to image
                     cardNames.push(returnedDecks[`${deckID}`][i].image);
+                    // add classes for carousel func
                     cardImages += `
-                        <img class="deck-card" src="${returnedDecks[`${deckID}`][i].image}" alt="${returnedDecks[`${deckID}`][i].name}">`
+                        <img 
+                            class="deck-card ${
+                                (i > displayClasses.length ? displayClasses[displayClasses.length -1] : displayClasses[i - 1])
+                            }" 
+                            src="${returnedDecks[`${deckID}`][i].image}" 
+                            alt="${returnedDecks[`${deckID}`][i].name}"
+                        >`
                 }
-                // this will be changed when implementing CSS styles to have each deck be a carousel
                 displayDeck += `
                     <div>
                         <span class="delete" id="${deckID}">X</span>
                         <h3>${returnedDecks[`${deckID}`][0].deck_name}</h3>
                         <h4>${returnedDecks[`${deckID}`][0].deck_class}</h4>
                         <div class="deck-cards">
+                            <span class="arrow left"></span>
                             ${cardImages}
+                            <span class="arrow right"></span>
                         </div>
                     </div>`;
             }else {
@@ -125,6 +147,7 @@ function displayDecks() {
             deckViewing.innerHTML = displayDeck;
         }
         deckDelete();
+        cardScroll();
     }else {
         // clear previously returned decks from page
         deckViewing.innerHTML = '';
@@ -183,6 +206,34 @@ async function userSearch() {
     }else {
         console.log('You must provide either a class and/or a deck name to use the seach function');
     }
+}
+// deck carousel
+function cardScroll() {
+    const arrows = document.querySelectorAll(".arrow");
+    arrows.forEach( arrow => {
+        arrow.addEventListener("click", e => {
+            let parentDeck = e.target.parentNode;
+            // deck event was triggered on
+            let deckCards = parentDeck.querySelectorAll(".deck-card");
+            // this works but need to figure out how to condense more (DRY!!!)
+            // JK only works on decks with fewer cards
+            if(e.target.classList.contains("left")) {
+                for (let i = deckCards.length - 1; i >= 0; i--) {
+                    deckCards[i].classList.add(`${deckCards[(i == 0 ? deckCards.length - 1 : i - 1)].classList[1]}`);
+                }
+                for (let i = deckCards.length - 1; i >= 0; i--) {
+                    deckCards[i].classList.remove(`${deckCards[i].classList[1]}`);
+                }
+            } else if(e.target.classList.contains("right")) {
+                for (let i = 0; i < deckCards.length; i++) {
+                    deckCards[i].classList.add(`${deckCards[(i == deckCards.length - 1 ? 0 : i + 1)].classList[1]}`);
+                }
+                for (let i = 0; i < deckCards.length; i++) {
+                    deckCards[i].classList.remove(`${deckCards[i].classList[1]}`);
+                }
+            }
+        })
+    })
 }
 
 searchBTN.addEventListener('click', userSearch);

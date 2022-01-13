@@ -203,7 +203,8 @@ nav a:hover{
     grid-column: 1 / 7;
 }
 
-/* deck search card carousel */
+        /* deck search card carousel */
+
 /* grid template with 13 columns */
 /* center card will take up 3 columns */
 /* side cards will be in 2 columns while overlapping the cards beside them */
@@ -216,8 +217,8 @@ nav a:hover{
     display: grid;
     grid-template-columns: repeat(13, 1fr);
 }
-.deck-cards::before, 
-.deck-cards::after {
+
+.arrow{
     position: absolute;
     content: '';
     width: 2.5em;
@@ -227,56 +228,70 @@ nav a:hover{
     border-left: 5px solid white;
     border-radius: 25%;
 }
-/* hover is on the parent element not the before or after elements */
-/* need to use a span or similar to use hover on the individual element */
-/* if a span ele is used it will be easier to target the specific deck for the click event */
-.deck-cards:hover::before {
+
+.deck-cards .left:hover {
     transform: scale(125%) rotate(-45deg);
     cursor: pointer;
 }
-.deck-cards:hover::after {
+
+.deck-cards .right:hover {
     transform: scale(125%) rotate(135deg);
     cursor: pointer;
 }
-.deck-cards::before {
+
+.deck-cards .left {
     left: -5em;
     transform: rotate(-45deg);
 }
-.deck-cards::after {
+
+.deck-cards .right {
     right: -5em;
     transform: rotate(135deg);
 }
+
 .deck-card {
     width: 100%;
     grid-row: 1 / 2;
     align-self: center;
 }
+
 .one-three {
     grid-column: 1 / 3;
 }
+
 .two-four {
     grid-column: 2 / 4
 }
+
 .three-five {
     grid-column: 3 / 5;
 }
+
 .four-six {
     grid-column: 4 / 6;
 }
+
 .highlight-card {
     grid-column: 6 / 9;
 }
+
 .nine-eleven {
     grid-column: 9 / 11;
 }
+
 .ten-twelve {
     grid-column: 10 / 12;
 }
+
 .eleven-thirteen {
     grid-column: 11 / 13;
 }
+
 .twelve-fourteen {
     grid-column: 12 / 14;
+}
+.hide-card {
+    display: none;
 }
 
 /* ***********
