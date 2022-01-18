@@ -257,18 +257,22 @@ nav a:hover{
 
 .one-three {
     grid-column: 1 / 3;
+    z-index: 0;
 }
 
 .two-four {
-    grid-column: 2 / 4
+    grid-column: 2 / 4;
+    z-index: 1;
 }
 
 .three-five {
     grid-column: 3 / 5;
+    z-index: 2;
 }
 
 .four-six {
     grid-column: 4 / 6;
+    z-index: 3;
 }
 
 .highlight-card {
@@ -277,18 +281,22 @@ nav a:hover{
 
 .nine-eleven {
     grid-column: 9 / 11;
+    z-index: 3;
 }
 
 .ten-twelve {
     grid-column: 10 / 12;
+    z-index: 2;
 }
 
 .eleven-thirteen {
     grid-column: 11 / 13;
+    z-index: 1;
 }
 
 .twelve-fourteen {
     grid-column: 12 / 14;
+    z-index: 0;
 }
 .hide-card {
     display: none;

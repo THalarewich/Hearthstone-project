@@ -215,25 +215,30 @@ function cardScroll() {
             let parentDeck = e.target.parentNode;
             // deck event was triggered on
             let deckCards = parentDeck.querySelectorAll(".deck-card");
-            // this works but need to figure out how to condense more (DRY!!!)
-            // JK only works on decks with fewer cards
-            if(e.target.classList.contains("left")) {
-                for (let i = deckCards.length - 1; i >= 0; i--) {
-                    deckCards[i].classList.add(`${deckCards[(i == 0 ? deckCards.length - 1 : i - 1)].classList[1]}`);
-                }
-                for (let i = deckCards.length - 1; i >= 0; i--) {
-                    deckCards[i].classList.remove(`${deckCards[i].classList[1]}`);
-                }
-            } else if(e.target.classList.contains("right")) {
-                for (let i = 0; i < deckCards.length; i++) {
-                    deckCards[i].classList.add(`${deckCards[(i == deckCards.length - 1 ? 0 : i + 1)].classList[1]}`);
-                }
-                for (let i = 0; i < deckCards.length; i++) {
+            // right arrow clicked
+            if(e.target.classList.contains("right")) {
+                moveCards(deckCards, "right");
+            // left arrow clicked
+            } else if(e.target.classList.contains("left")) {
+                moveCards(deckCards, "left");
+            }
+            // remove previous card class to change card position step 2
+            for (let i = deckCards.length - 1; i >= 0; i--) {
+                if (deckCards[i].classList.length == 3) {
                     deckCards[i].classList.remove(`${deckCards[i].classList[1]}`);
                 }
             }
         })
     })
+}
+
+// change card position step 1
+function moveCards(deck, direction) {
+    for (let i = 0; i < deck.length; i++) {
+        const right = (i == 0 ? deck.length - 1 : i - 1);
+        const left = (i == deck.length - 1 ? 0 : i + 1);
+        deck[i].classList.add(`${deck[(direction === "right" ? right : left)].classList[1]}`)
+    }
 }
 
 searchBTN.addEventListener('click', userSearch);
