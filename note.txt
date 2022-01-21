@@ -1,5 +1,0 @@
-have a site login 
-store info in DB (hash pw)
-connect account with battle.net
-store token in DB for future use with user
-allow user to logout of site

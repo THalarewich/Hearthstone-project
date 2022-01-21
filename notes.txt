@@ -67,6 +67,8 @@ IN BUILDER.JS
         you type yes into the command prompt
             you get error "Invalid left-hand side in assignment"
     - drop down menus for filters are off to the right side slightly
+    - when class cards are added then removed with the filter reset, the total card count is off after the cards are 
+        removed
 CSS TODO NOTES
     - Watch videos on decktop vs mobile layout and make a cheat sheet on steps to lay everything out!!!!
     - Majority of console.log()/(commented 'popup') messages need to be converted to popup windows or messages for 
