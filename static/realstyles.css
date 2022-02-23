@@ -75,7 +75,7 @@ a:visited {
 
 /* nav styles */
 .nav-toggle {
-    /* change to just live off screen */
+    /* change to just live off screen to complie with being able to select menu with tab*/
     display: none;
 }
 
@@ -163,15 +163,8 @@ nav a:hover{
 ************** */
 
 /* GRID ONLY WORKS WITH DIRECT CHILDREN NOT NESTED DIVS */
-/* so far all of these profile styles will *need to be* added to the media query for large screens */
-.profile-content {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 2em;
-}
 
 .error {
-    grid-column: 2 / 6;
     padding: 2em;
     border-radius: 5px;
     background-color: var(--yellowish-gold);
@@ -179,7 +172,6 @@ nav a:hover{
 }
 
 .battle-net-login {
-    grid-column: 5 / 7;
     border: 3px solid var(--dark-tan);
     border-radius: 20px;
     background-color: var(--yellowish-gold);
@@ -191,17 +183,10 @@ nav a:hover{
 .battle-net-login a {
     color: black;
 }
-.battle-net-login:hover {
+/* .battle-net-login:hover {
+    
+} */
 
-}
-
-.match-em-pb {
-    grid-column: 4 / 7;
-}
-
-.deck-search {
-    grid-column: 1 / 7;
-}
 
         /* deck search card carousel */
 
@@ -212,6 +197,8 @@ nav a:hover{
 /* use JS to cycle through cards that are not currently shown */
 /* use css transform/transisions to make cards look like they are sliding */
 /* will need transitions on both class (one that gets added to card/one that gets removed from card */
+
+/* need to figure out how i want to  display on mobile and transfer these styles to media query */
 .deck-cards {
     position: relative;
     display: grid;
@@ -314,16 +301,18 @@ nav a:hover{
 
 /* have main content display of flex, have card search results/current deck side X side on destop
         have current deck below search results on mobile and make current deck an expandable tab */
+
+
 .filter-buttons{
-    /* display: none; */
     display: grid;
     grid-template-columns: repeat(5, auto);
 }
 .filter-btn {
 
 }
+
+/* class toggled on deck class selections */
 .hidden{
-    /* visibility: hidden; */
     display: none;
 }
 .deck-class:hover{
@@ -385,16 +374,67 @@ of the way for the menu to appear */
     flex-direction: row-reverse;
 }
 /* size will change with media query */
-#current-deck{
+/* #current-deck{
     width:30%;
     height: 70vh;
     border: 2px solid red;
-}
+} */
 #search-results{
     width:70%;
     height: auto;
     border: 2px solid black;
 }
+/* make a tab button @ bottom of screen
+when clicked it will expand the current deck */
+/* make current deck sticky (fixed) @ bottom of the screen */
+/* use scale() animation to make current deck grow from bottom of vp when button is clicked*/
+/* maybe use same system that was used for hamburger menu drop down??? */
+/* dont show on screen */
+.deck-toggle {
+    position: absolute;
+    left: -500px;
+    top: -500px;
+}
+
+.deck-toggle-label div span {
+    display: block;
+    position: relative;
+    top: 29%;
+    left: 19%;
+    height: 1em;
+    width: 1em;
+    border-top: 5px solid var(--dark-brown);
+    border-left: 5px solid var(--dark-brown);
+    transform: rotate(45deg);
+
+}
+.deck-toggle-label div {
+    height: 2.25em;
+    width: 2.25em;
+    border-radius: 50%;
+    background-color: var(--beige);
+    border: 2px solid var(--dark-brown);
+    position: relative;
+    top: 5%;
+    left: 1%;
+}
+.deck-toggle-label {
+    display: flex;
+    background-color: var(--dark-tan);
+    height: 2.5em;
+    border-radius: 10px;
+}
+.deck-toggle-label span {
+    padding: 0.4em;
+    font-size: 1.2em;
+    font-weight: bolder;
+    color: var(--yellowish-gold);
+}
+
+.current-deck {
+
+}
+
 
 
 /* ***********
@@ -532,4 +572,25 @@ of the way for the menu to appear */
         transform: scale(1, 1);
         transform-origin: right;
     }
+
+    /* PROFILE */
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 2em;
+    }
+    .error {
+        grid-column: 2 / 6;
+    }
+    .battle-net-login {
+        grid-column: 5 / 7;
+    }
+    .match-em-pb {
+        grid-column: 4 / 7;
+    }
+    .deck-search {
+        grid-column: 1 / 7;
+    }
+
 }
